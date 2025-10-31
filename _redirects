@@ -1,2 +1,3 @@
-/api/ping   /.netlify/functions/ping   200
-/*          /index.html                 200
+/api/geocode   /.netlify/functions/geocode   200
+/api/route     /.netlify/functions/route     200
+/*             /index.html                    200
