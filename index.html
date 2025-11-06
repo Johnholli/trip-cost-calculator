@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -65,37 +64,37 @@
     .x{background:#122035;color:#aac2da;border:1px solid var(--border); border-radius:10px; padding:6px 10px; cursor:pointer}
     .linkbar a{color:var(--accent-2); text-decoration:none; margin-right:10px}
     .status{min-height:20px;margin-top:8px}
+
     /* Diesel brand polish — spacing, glow, and focus */
-header{
-  border-bottom:1px solid var(--border);
-  background:rgba(11,16,24,.72);
-  backdrop-filter: blur(10px) saturate(120%);
-}
-.card{
-  padding:18px;
-  border-radius:16px;
-  box-shadow: 0 12px 32px rgba(0,0,0,.35);
-}
-.btn{
-  box-shadow: 0 10px 24px rgba(46,230,163,.20), 0 1px 0 rgba(255,255,255,.06) inset;
-}
-.btn:hover{ transform: translateY(-1px); filter: saturate(1.05); }
-.btn.secondary:hover{ box-shadow:0 8px 24px rgba(0,0,0,.25); border-color:#24354d; }
+    header{
+      border-bottom:1px solid var(--border);
+      background:rgba(11,16,24,.72);
+      backdrop-filter: blur(10px) saturate(120%);
+    }
+    .card{
+      padding:18px;
+      border-radius:16px;
+      box-shadow: 0 12px 32px rgba(0,0,0,.35);
+    }
+    .btn{
+      box-shadow: 0 10px 24px rgba(46,230,163,.20), 0 1px 0 rgba(255,255,255,.06) inset;
+    }
+    .btn:hover{ transform: translateY(-1px); filter: saturate(1.05); }
+    .btn.secondary:hover{ box-shadow:0 8px 24px rgba(0,0,0,.25); border-color:#24354d; }
 
-input, select{
-  transition: box-shadow .15s ease, border-color .15s ease, transform .06s ease;
-}
-input:focus, select:focus{
-  border-color:var(--accent);
-  box-shadow:0 0 0 3px rgba(46,230,163,.22);
-  transform: translateY(-1px);
-}
+    input, select{
+      transition: box-shadow .15s ease, border-color .15s ease, transform .06s ease;
+    }
+    input:focus, select:focus{
+      border-color:var(--accent);
+      box-shadow:0 0 0 3px rgba(46,230,163,.22);
+      transform: translateY(-1px);
+    }
 
-.pill{ border-color:#223145; }
-.row{ gap:18px; }
-.grid3, .grid2{ gap:12px; }
-.linkbar a:hover{ text-decoration:underline; }
-
+    .pill{ border-color:#223145; }
+    .row{ gap:18px; }
+    .grid3, .grid2{ gap:12px; }
+    .linkbar a:hover{ text-decoration:underline; }
   </style>
 </head>
 <body>
@@ -147,6 +146,7 @@ input:focus, select:focus{
             </div>
           </div>
 
+          <!-- Truck preset selector -->
           <div class="grid2" style="margin-top:12px">
             <div>
               <label>Truck Preset</label>
@@ -265,7 +265,7 @@ input:focus, select:focus{
         <div><span class="pill">Gross</span> $${e.rate} • <span class="pill">Net</span> $${e.net}</div>
         <div><span class="pill">$/mi (gross)</span> ${e.rpmGross} • <span class="pill">$/mi (net)</span> ${e.rpmNet}</div>
       </div>`; cmpDiv.appendChild(el); el.querySelector('.x').onclick=()=>removeEntry(i); }); }
-    clearBtn.addEventListener('click',()=>{ ['start','end','fuel','mpg','rate','tank','refuelPct'].forEach(id=>document.getElementById(id).value=''); document.querySelectorAll('.stop').forEach(s=>s.value=''); document.getElementById('results').textContent=''; document.getElementById('range').textContent=''; document.getElementById('status').textContent=''; });
+    clearBtn.addEventListener('click',()=>{ ['start','end','fuel','mpg','rate','tank','refuelPct'].forEach(id=>document.getElementById(id).value=''); document.querySelectorAll('.stop').forEach(s=>s.value=''); document.getElementById('results').textContent=''; document.getElementById('range').textContent=''; document.getElementById('status').textContent=''; saveFields(); });
 
     // Owner Calculate
     let lastGeos=null, lastNames=null, lastTotals=null;
@@ -311,7 +311,7 @@ input:focus, select:focus{
           <div><span class="pill">One-way miles</span> <strong>${miles.toFixed(1)} mi</strong> • <span class="pill">ETA</span> ${fmtHrs(totalSeconds)}</div>
           <div style="margin-top:6px"><span class="pill">Fuel used</span> ${gallons.toFixed(1)} gal • <span class="pill">Fuel cost</span> $ ${fuelCost.toFixed(2)}</div>
           <div style="margin-top:6px"><span class="pill">Gross pay</span> $ ${rate.toFixed(2)} • <span class="pill">Net after fuel</span> $ ${net.toFixed(2)}</div>
-         <div style="margin-top:6px"><span class="pill">$/mi (gross)</span> ${rpmGross.toFixed(2)} • <span class="pill">$/mi (net)</span> ${rpmNet.toFixed(2)} ${rpmBadge(rpmNet)}</div>
+          <div style="margin-top:6px"><span class="pill">$/mi (gross)</span> ${rpmGross.toFixed(2)} • <span class="pill">$/mi (net)</span> ${rpmNet.toFixed(2)} ${rpmBadge(rpmNet)}</div>
         `;
 
         // Tank range & refuel alert
@@ -348,6 +348,9 @@ input:focus, select:focus{
             updateMapLinks();
           }catch(e){ console.error(e); }
         },200);
+
+        // persist fields after a run
+        saveFields();
 
       }catch(e){ console.error(e); status.textContent=e.message; }
     });
@@ -450,16 +453,67 @@ input:focus, select:focus{
       }catch(e){ console.error(e); }
     }
 
+    // === Truck Presets ===
+    const PRESETS = {
+      box26:   { mpg: 8.0, tank: 70 },
+      daycab:  { mpg: 6.5, tank: 120 },
+      sleeper: { mpg: 6.0, tank: 150 }
+    };
+    function applyPreset(key){
+      const p = PRESETS[key]; if(!p) return;
+      const mpg = document.getElementById('mpg');
+      const tank = document.getElementById('tank');
+      if(mpg)  mpg.value  = p.mpg;
+      if(tank) tank.value = p.tank;
+      saveFields();
+    }
+    const presetSel = document.getElementById('preset');
+    if(presetSel){
+      presetSel.addEventListener('change', ()=>{
+        if(presetSel.value !== 'custom') applyPreset(presetSel.value);
+      });
+    }
+
+    // === Field autosave & restore ===
+    const FIELD_IDS = ['start','end','fuel','mpg','rate','tank','refuelPct'];
+    function saveFields(){
+      const obj = {};
+      FIELD_IDS.forEach(id => { const el=document.getElementById(id); if(el) obj[id]=el.value; });
+      const preset = document.getElementById('preset'); if(preset) obj.preset = preset.value;
+      localStorage.setItem('db_fields', JSON.stringify(obj));
+    }
+    function loadFields(){
+      try{
+        const raw = localStorage.getItem('db_fields'); if(!raw) return;
+        const obj = JSON.parse(raw);
+        FIELD_IDS.forEach(id => { if(obj[id]!=null && document.getElementById(id)) document.getElementById(id).value = obj[id]; });
+        if(obj.preset && document.getElementById('preset')){
+          document.getElementById('preset').value = obj.preset;
+        }
+      }catch{}
+    }
+    FIELD_IDS.forEach(id => { const el=document.getElementById(id); if(el) el.addEventListener('input', saveFields); });
+    if(presetSel) presetSel.addEventListener('change', saveFields);
+
+    // Enter-to-calc UX
+    document.addEventListener('keydown', (e)=>{
+      if(e.key==='Enter' && document.getElementById('owner').style.display!=='none'){
+        const active = document.activeElement;
+        const isInput = active && (active.tagName==='INPUT' || active.tagName==='SELECT');
+        if(isInput){ e.preventDefault(); document.getElementById('calc').click(); }
+      }
+    });
+
     // Init
     loadSaves();
-  
-    // RPM Badge function
-  function rpmBadge(v){
-    if(isNaN(v)) return '';
-    const cls = v>=2 ? 'green' : (v>=1.5 ? 'yellow' : 'red');
-    return `<span class="badge ${cls}">$${v.toFixed(2)} /mi</span>`;
-  }
+    loadFields();
 
-</script>
+    // RPM Badge function
+    function rpmBadge(v){
+      if(isNaN(v)) return '';
+      const cls = v>=2 ? 'green' : (v>=1.5 ? 'yellow' : 'red');
+      return `<span class="badge ${cls}">$${v.toFixed(2)} /mi</span>`;
+    }
+  </script>
 </body>
 </html>
