@@ -5,96 +5,97 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Diesel Buddy — Trip Cost & Driver Tools</title>
   <style>
+    /* ===== 2026 Light Theme ===== */
+    :root{
+      --bg:#f7fafc;           /* page */
+      --ink:#0b1220;          /* primary text */
+      --muted:#4a5b73;        /* secondary text */
+      --card:#ffffff;         /* card bg */
+      --border:#e6eef6;       /* card border */
+      --pill:#f0f5fb;         /* pills/chips */
+      --accent:#1f9e74;       /* green accent */
+      --accent-2:#2a7ae4;     /* blue accent */
+      --danger:#c13b3b;       /* alerts */
+      --shadow:0 14px 35px rgba(16,38,76,.08);
+      --radius:16px;
+    }
+
+    *{box-sizing:border-box; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale}
+    body{
+      margin:0; color:var(--ink); background:
+        radial-gradient(1200px 600px at 90% -20%, rgba(42,122,228,.07), transparent 60%),
+        radial-gradient(1000px 600px at -20% 10%, rgba(31,158,116,.08), transparent 60%),
+        var(--bg);
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    }
+    header{
+      display:flex; gap:12px; align-items:center; padding:16px 20px; position:sticky; top:0; z-index:10;
+      background:rgba(255,255,255,.8); backdrop-filter: blur(8px); border-bottom:1px solid var(--border);
+    }
+    .logo{width:40px;height:40px;border-radius:12px;
+      background:
+        radial-gradient(16px 16px at 30% 30%, rgba(0,0,0,.06), transparent 60%),
+        linear-gradient(135deg, var(--accent-2), var(--accent));
+      display:grid;place-items:center; color:#06271d; font-weight:900; letter-spacing:.5px;
+      box-shadow: 0 0 0 1px rgba(31,158,116,.15), 0 10px 30px rgba(31,158,116,.15);
+    }
+    .brand h1{font-size:18px; margin:0}
+    .tag{color:var(--muted); font-size:12px; margin-top:2px}
+
+    .wrap{max-width:1120px; margin:20px auto; padding:0 16px}
+    .row{display:grid; grid-template-columns:1fr 380px; gap:16px}
+    .card{background:var(--card); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); padding:18px}
+    h3{margin:0 0 12px} label{display:block; font-weight:600; margin:10px 0 6px}
+    input, select{
+      width:100%; padding:12px; border-radius:12px; border:1px solid var(--border);
+      background:#fff; color:var(--ink); outline:none; transition:.15s box-shadow,.15s border-color,.06s transform;
+    }
+    input:focus, select:focus{ border-color:var(--accent); box-shadow:0 0 0 3px rgba(31,158,116,.18); transform: translateY(-1px)}
+    .btn{
+      border:0; border-radius:12px; padding:12px 16px; font-weight:700; cursor:pointer;
+      background:linear-gradient(180deg, var(--accent), #178862); color:#fff;
+      box-shadow: 0 10px 24px rgba(31,158,116,.18), 0 1px 0 rgba(255,255,255,.7) inset;
+      transition: transform .08s ease, filter .2s ease;
+    }
+    .btn:hover{ transform: translateY(-1px); filter: saturate(1.05); }
+    .btn.secondary{background:#eef4fb; color:#17365f; border:1px solid var(--border); box-shadow:none}
+    .btn.secondary:hover{ box-shadow:0 8px 24px rgba(16,38,76,.08); border-color:#d7e4f3; }
+    .btn.danger{background:#f3e7e7; color:#8b2b2b; border:1px solid #edd2d2}
+    .btn-row{display:flex; gap:10px; flex-wrap:wrap}
+
+    .grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:12px}
+    .grid2{display:grid; grid-template-columns:repeat(2,1fr); gap:12px}
+    .pill{display:inline-block; background:var(--pill); padding:6px 10px; border-radius:999px; font-size:12px; color:#37506d; border:1px solid var(--border)}
+    .muted{color:var(--muted); font-size:12px}
+    .result{font-size:16px; line-height:1.55}
+    .stops{display:grid; gap:8px}
+    .stop-row{display:grid; grid-template-columns:1fr auto; gap:8px}
+    .stop-row .rm{padding:8px 12px}
+    .hr{height:1px;background:var(--border); margin:12px 0}
+
+    .tabs{display:flex; gap:8px; margin-bottom:12px}
+    .tab{padding:10px 14px; border-radius:12px; border:1px solid var(--border); background:#fff; cursor:pointer; color:#17365f}
+    .tab.active{background:#eef4fb; color:#0b2466; border-color:#d7e4f3}
+
+    .compare{display:grid; gap:12px}
+    .cmp-card{border:1px solid var(--border); background:#fff; border-radius:14px; padding:12px}
+    .cmp-title{display:flex;align-items:center;justify-content:space-between; gap:8px}
+    .cmp-title h4{margin:0;font-size:14px}
+    .x{background:#eef4fb;color:#16335a;border:1px solid var(--border); border-radius:10px; padding:6px 10px; cursor:pointer}
+
+    .linkbar a{color:var(--accent-2); text-decoration:none; margin-right:10px}
+    .linkbar a:hover{text-decoration:underline}
+    .status{min-height:20px;margin-top:8px}
+
     /* RPM badges */
     .badge{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:700}
     .badge.green{background:#0f2b22;color:#2ee6a3;border:1px solid #1f6a54}
     .badge.yellow{background:#2b2a0f;color:#ffd966;border:1px solid #726915}
     .badge.red{background:#2b0f11;color:#ff9aa2;border:1px solid #7a2228}
 
-    :root{
-      --bg-0:#070b11; --bg-1:#0b1018; --card:#0f1621; --border:#1b2635; --pill:#121c29;
-      --muted:#9fb0c3; --text:#e9f2fb; --accent:#2ee6a3; --accent-2:#58a6ff; --danger:#ff6b6b;
-      --shadow:0 14px 40px rgba(0,0,0,.45); --radius:16px;
-    }
-    *{box-sizing:border-box; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale}
-    body{
-      margin:0; color:var(--text);
-      background:
-        radial-gradient(1200px 600px at 80% -20%, rgba(46,230,163,.08), transparent 60%),
-        radial-gradient(900px 500px at -10% 10%, rgba(88,166,255,.07), transparent 60%),
-        linear-gradient(180deg, var(--bg-0), #0a121c 60%, #09121b 100%);
-      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-    }
-    header{
-      display:flex; gap:12px; align-items:center; padding:18px 20px; position:sticky; top:0; z-index:10;
-      background:rgba(11,16,24,.7); backdrop-filter: blur(10px); border-bottom:1px solid var(--border);
-    }
-    .logo{width:40px;height:40px;border-radius:12px;
-      background:
-        radial-gradient(18px 18px at 30% 30%, rgba(0,0,0,.25), transparent 60%),
-        linear-gradient(135deg, var(--accent-2), var(--accent));
-      display:grid;place-items:center; color:#031616; font-weight:900; letter-spacing:.5px;
-      box-shadow: 0 0 0 1px rgba(46,230,163,.25), 0 10px 30px rgba(46,230,163,.2);
-    }
-    .brand h1{font-size:18px; margin:0}
-    .tag{color:var(--muted); font-size:12px; margin-top:2px}
-    .wrap{max-width:1060px; margin:24px auto; padding:0 16px}
-    .row{display:grid; grid-template-columns:1fr 360px; gap:16px}
-    .card{background:var(--card); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); padding:16px}
-    h3{margin:0 0 10px} label{display:block; font-weight:600; margin:10px 0 6px}
-    input, select{width:100%; padding:12px; border-radius:12px; border:1px solid var(--border); background:#0b1420; color:var(--text); outline:none}
-    input:focus, select:focus{ border-color:var(--accent); box-shadow:0 0 0 3px rgba(46,230,163,.2) }
-    .btn{border:0; border-radius:12px; padding:12px 16px; font-weight:700; cursor:pointer; background:linear-gradient(180deg, var(--accent), #20c58a); color:#041713}
-    .btn.secondary{background:#162234; color:var(--text); border:1px solid var(--border)}
-    .btn.danger{background:#2a0f14; color:#ffd7d7; border:1px solid #5a1e24}
-    .btn-row{display:flex; gap:10px; flex-wrap:wrap}
-    .grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:12px}
-    .grid2{display:grid; grid-template-columns:repeat(2,1fr); gap:12px}
-    .pill{display:inline-block; background:var(--pill); padding:6px 10px; border-radius:999px; font-size:12px; color:var(--muted); border:1px solid var(--border)}
-    .muted{color:var(--muted); font-size:12px} .result{font-size:16px; line-height:1.5}
-    .stops{display:grid; gap:8px} .stop-row{display:grid; grid-template-columns:1fr auto; gap:8px} .stop-row .rm{padding:8px 12px}
-    .hr{height:1px;background:var(--border); margin:12px 0}
-    .tabs{display:flex; gap:8px; margin-bottom:12px}
-    .tab{padding:10px 14px; border-radius:12px; border:1px solid var(--border); background:#0b1420; cursor:pointer; color:var(--muted)}
-    .tab.active{background:#132034; color:var(--text); border-color:#25374f}
-    .compare{display:grid; gap:12px}
-    .cmp-card{border:1px solid var(--border); background:#0e1826; border-radius:14px; padding:12px}
-    .cmp-title{display:flex;align-items:center;justify-content:space-between; gap:8px}
-    .cmp-title h4{margin:0;font-size:14px}
-    .x{background:#122035;color:#aac2da;border:1px solid var(--border); border-radius:10px; padding:6px 10px; cursor:pointer}
-    .linkbar a{color:var(--accent-2); text-decoration:none; margin-right:10px}
-    .status{min-height:20px;margin-top:8px}
-
-    /* Diesel brand polish — spacing, glow, and focus */
-    header{
-      border-bottom:1px solid var(--border);
-      background:rgba(11,16,24,.72);
-      backdrop-filter: blur(10px) saturate(120%);
-    }
-    .card{
-      padding:18px;
-      border-radius:16px;
-      box-shadow: 0 12px 32px rgba(0,0,0,.35);
-    }
-    .btn{
-      box-shadow: 0 10px 24px rgba(46,230,163,.20), 0 1px 0 rgba(255,255,255,.06) inset;
-    }
-    .btn:hover{ transform: translateY(-1px); filter: saturate(1.05); }
-    .btn.secondary:hover{ box-shadow:0 8px 24px rgba(0,0,0,.25); border-color:#24354d; }
-
-    input, select{
-      transition: box-shadow .15s ease, border-color .15s ease, transform .06s ease;
-    }
-    input:focus, select:focus{
-      border-color:var(--accent);
-      box-shadow:0 0 0 3px rgba(46,230,163,.22);
-      transform: translateY(-1px);
-    }
-
-    .pill{ border-color:#223145; }
-    .row{ gap:18px; }
-    .grid3, .grid2{ gap:12px; }
-    .linkbar a:hover{ text-decoration:underline; }
+    /* Driver plan spacing */
+    #hosPlan .rowline{display:flex; gap:12px; align-items:center; margin-top:8px}
+    #hosPlan .big{font-size:18px; font-weight:700}
   </style>
 </head>
 <body>
@@ -106,7 +107,7 @@
     </div>
     <div style="flex:1"></div>
     <div class="btn-row">
-      <button id="save" class="btn secondary">Save</button>
+      <button id="save" class="btn secondary">Save to Compare</button>
       <button id="clear" class="btn danger">Clear</button>
     </div>
   </header>
@@ -166,7 +167,6 @@
 
           <div class="btn-row" style="margin-top:14px">
             <button class="btn" id="calc">Calculate</button>
-            <button class="btn secondary" id="btnNoToll">Compare: No-Toll Route</button>
             <span class="status muted" id="status"></span>
           </div>
         </div>
@@ -212,7 +212,9 @@
 
         <div class="card">
           <h3>HOS-Aware Plan</h3>
-          <div id="hosPlan" class="result">Run Owner/Calc first; then HOS ETA.</div>
+          <div id="hosPlan" class="result">
+            <div class="muted">Run Owner/Calc first; then HOS ETA.</div>
+          </div>
         </div>
       </div>
     </div>
@@ -244,13 +246,28 @@
     function fmtHrs(s){const h=Math.floor(s/3600);const m=Math.round((s%3600)/60);return `${h}h ${m}m`; }
     async function api(path, body){ const r=await fetch(path,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body||{})}); if(!r.ok) throw new Error(await r.text()); return r.json(); }
 
-    // API helpers
+    // ===== Free fuel baseline (fallback if API not available) =====
+    const STATE_DIESEL = {
+      AL:3.90, AK:4.50, AZ:4.30, AR:3.85, CA:5.20, CO:4.10, CT:4.70, DE:4.10, FL:4.20, GA:4.05,
+      HI:5.60, ID:4.40, IL:4.80, IN:4.35, IA:4.10, KS:3.95, KY:4.10, LA:3.85, ME:4.60, MD:4.35,
+      MA:4.50, MI:4.25, MN:4.10, MS:3.85, MO:3.90, MT:4.30, NE:4.00, NV:4.70, NH:4.45, NJ:4.45,
+      NM:4.10, NY:4.65, NC:4.05, ND:4.15, OH:4.10, OK:3.80, OR:4.70, PA:4.85, RI:4.45, SC:3.95,
+      SD:4.10, TN:3.95, TX:3.90, UT:4.25, VT:4.55, VA:4.05, WA:5.00, WV:4.20, WI:4.05, WY:4.15,
+      DC:4.75
+    };
+    function parseStateAbbr(s){ if(!s) return null; const parts=s.split(','); if(parts.length<2) return null; const ab=parts[parts.length-1].trim().toUpperCase(); return ab.slice(0,2); }
+    function fallbackFuelFromInputs(){ const a=parseStateAbbr(document.getElementById('start').value); const b=parseStateAbbr(document.getElementById('end').value);
+      const pa=STATE_DIESEL[a]||null, pb=STATE_DIESEL[b]||null;
+      if(pa && pb) return { price: (pa+pb)/2, meta:'baseline' };
+      if(pa) return { price: pa, meta:'baseline' };
+      if(pb) return { price: pb, meta:'baseline' };
+      return { price:null, meta:'manual' };
+    }
+
+    // API helpers (backend)
     async function geocode(q){ const data=await api('/api/geocode',{q}); if(!data.length) throw new Error('No results for '+q); const {lat,lon}=data[0]; return {lat:parseFloat(lat),lon:parseFloat(lon)}; }
     async function route(a,b){ return api('/api/route',{origin:a,dest:b}); }
-    async function routeNoToll(coords){ return api('/api/route_notoll',{coords}); }
     async function fuelPriceByCoords(coords){ try{ return await api('/api/fuel',{coords}); } catch(e){ return {price:null,meta:'manual'}; } }
-    async function tollsForRoute(coords){ try{ return await api('/api/tolls',{coords}); } catch(e){ return {provider:'none'}; } }
-    async function nearby(coords, type){ return api('/api/nearby',{coords,type,limit:3}); }
 
     // Save / Clear / Compare
     const saveBtn=document.getElementById('save'); const clearBtn=document.getElementById('clear'); const cmpDiv=document.getElementById('compare');
@@ -263,7 +280,7 @@
         <div><span class="pill">Miles</span> ${e.miles} • <span class="pill">ETA</span> ${e.eta}</div>
         <div><span class="pill">Fuel</span> ${e.gallons} gal ($${e.fuelCost})</div>
         <div><span class="pill">Gross</span> $${e.rate} • <span class="pill">Net</span> $${e.net}</div>
-        <div><span class="pill">$/mi (gross)</span> ${e.rpmGross} • <span class="pill">$/mi (net)</span> ${e.rpmNet}</div>
+        <div><span class="pill">$/mi (gross)</span> ${e.rpmGross} • <span class="pill">$/mi (net)</span> ${e.rpmNet} ${rpmBadge(parseFloat(e.rpmNet))}</div>
       </div>`; cmpDiv.appendChild(el); el.querySelector('.x').onclick=()=>removeEntry(i); }); }
     clearBtn.addEventListener('click',()=>{ ['start','end','fuel','mpg','rate','tank','refuelPct'].forEach(id=>document.getElementById(id).value=''); document.querySelectorAll('.stop').forEach(s=>s.value=''); document.getElementById('results').textContent=''; document.getElementById('range').textContent=''; document.getElementById('status').textContent=''; saveFields(); });
 
@@ -273,7 +290,7 @@
       const start=document.getElementById('start').value.trim();
       const end=document.getElementById('end').value.trim();
       const stops=Array.from(document.querySelectorAll('.stop')).map(i=>i.value.trim()).filter(Boolean);
-      const fuel=parseFloat(document.getElementById('fuel').value||'0');
+      const fuelInput=parseFloat(document.getElementById('fuel').value||'0');
       const mpg=parseFloat(document.getElementById('mpg').value||'0');
       const rate=parseFloat(document.getElementById('rate').value||'0');
       const tank=parseFloat(document.getElementById('tank').value||'0');
@@ -286,23 +303,32 @@
         const geos=[]; for(const n of names) geos.push(await geocode(n));
         lastGeos = geos; lastNames = names;
 
-        // Auto fuel price (EIA avg origin/dest) if available
-        const originFuel = await fuelPriceByCoords(geos[0]);
-        const destFuel   = await fuelPriceByCoords(geos[geos.length-1]);
-        if(originFuel?.price && destFuel?.price){
-          const avg=((originFuel.price+destFuel.price)/2);
-          document.getElementById('fuel').value=avg.toFixed(2);
-          fuelMeta.textContent=`auto: ${avg.toFixed(2)} (${originFuel.source||'EIA'})`;
-        } else { fuelMeta.textContent='manual'; }
+        // Auto fuel price: prefer backend; else fallback to state baseline
+        let autoFuel=null;
+        try{
+          const originFuel = await fuelPriceByCoords(geos[0]);
+          const destFuel   = await fuelPriceByCoords(geos[geos.length-1]);
+          if(originFuel?.price && destFuel?.price){
+            autoFuel = ((originFuel.price+destFuel.price)/2);
+            fuelMeta.textContent=`auto: ${autoFuel.toFixed(2)} (${originFuel.source||'baseline'})`;
+          }
+        }catch{}
+        if(!autoFuel){
+          const fb = fallbackFuelFromInputs();
+          if(fb.price){ autoFuel = fb.price; fuelMeta.textContent=`auto: ${autoFuel.toFixed(2)} (baseline)`; }
+          else { fuelMeta.textContent='manual'; }
+        }
+        const fuel = Number.isFinite(autoFuel) ? autoFuel : fuelInput;
+        if(Number.isFinite(autoFuel)) document.getElementById('fuel').value = autoFuel.toFixed(2);
 
-        // Route all legs (OSRM)
+        // Route all legs
         let totalMeters=0,totalSeconds=0; const legLabels=[];
         for(let i=0;i<geos.length-1;i++){ const leg=await route(geos[i],geos[i+1]); totalMeters+=leg.meters; totalSeconds+=leg.seconds; legLabels.push(`${names[i]} → ${names[i+1]}`); }
         lastTotals={meters:totalMeters, seconds:totalSeconds};
 
         const miles=totalMeters/1609.344;
         const gallons = mpg>0 ? miles/mpg : 0;
-        const fuelCost = gallons * parseFloat(document.getElementById('fuel').value||fuel);
+        const fuelCost = gallons * fuel;
         const net = rate - fuelCost;
         const rpmGross = miles>0 ? (rate/miles) : 0;
         const rpmNet   = miles>0 ? (net/miles)   : 0;
@@ -321,8 +347,8 @@
           <div style="margin-top:6px"><span class="pill">Refuel alert</span> ${stopsNeeded>0? '<span style="color:var(--danger)">Plan '+stopsNeeded+' stop(s)</span>':'No refuel needed'}</div>`;
         }
 
-        // Enable Save
-        saveBtn.onclick=()=>saveEntry({
+        // Save to Compare (always armed after a run)
+        saveBtn.onclick=()=>{ saveEntry({
           title:`${names[0]} → ${names[names.length-1]}`,
           legs:legLabels.join(' · '),
           miles:miles.toFixed(1),
@@ -333,60 +359,12 @@
           net:net.toFixed(2),
           rpmGross:rpmGross.toFixed(2),
           rpmNet:rpmNet.toFixed(2)
-        });
+        }); status.textContent='Saved to Compare.'; };
 
         status.textContent='Done.';
-
-        // Auto: tollway miles (free) + map links
-        setTimeout(async ()=>{
-          try{
-            const toll = await tollsForRoute(lastGeos);
-            if(toll?.provider==='ors' && typeof toll.toll_meters==='number'){
-              const tmi = (toll.toll_meters/1609.344).toFixed(1);
-              results.innerHTML += `<div style="margin-top:6px"><span class="pill">Tollway miles (est)</span> ${tmi} <span class="muted">(ORS)</span></div>`;
-            }
-            updateMapLinks();
-          }catch(e){ console.error(e); }
-        },200);
-
-        // persist fields after a run
-        saveFields();
-
+        updateMapLinks();
+        saveFields(); // persist inputs
       }catch(e){ console.error(e); status.textContent=e.message; }
-    });
-
-    // Compare: No-Toll Route (free ORS alt)
-    document.getElementById('btnNoToll').addEventListener('click', async ()=>{
-      const status=document.getElementById('status'); const results=document.getElementById('results');
-      try{
-        if(!lastGeos||!lastTotals){ status.textContent='Run Calculate first.'; return; }
-        status.textContent='Computing no-toll alternative…';
-        const alt = await routeNoToll(lastGeos);
-
-        const baseMeters=lastTotals.meters, baseSecs=lastTotals.seconds;
-        const altMiles=alt.meters/1609.344, baseMiles=baseMeters/1609.344;
-        const mpg=parseFloat(document.getElementById('mpg').value||'0');
-        const fuel=parseFloat(document.getElementById('fuel').value||'0');
-        const rate=parseFloat(document.getElementById('rate').value||'0');
-
-        const baseGallons=mpg>0? baseMiles/mpg : 0; const baseFuel=baseGallons*fuel; const baseNet=rate-baseFuel;
-        const altGallons =mpg>0? altMiles/mpg  : 0; const altFuel =altGallons*fuel;  const altNet =rate-altFuel;
-
-        const dMiles = altMiles-baseMiles; const dSecs=alt.seconds-baseSecs; const dFuel=altFuel-baseFuel; const dNet=altNet-baseNet;
-
-        results.innerHTML += `
-          <div class="hr"></div>
-          <div><span class="pill">No-Toll route (est)</span> <strong>${altMiles.toFixed(1)} mi</strong> • <span class="pill">ETA</span> ${fmtHrs(alt.seconds)}</div>
-          <div style="margin-top:6px"><span class="pill">Fuel used</span> ${altGallons.toFixed(1)} gal • <span class="pill">Fuel cost</span> $ ${altFuel.toFixed(2)}</div>
-          <div style="margin-top:6px"><span class="pill">Net after fuel</span> $ ${altNet.toFixed(2)} • <span class="pill">$/mi (net)</span> ${(altMiles>0?(altNet/altMiles):0).toFixed(2)} ${rpmBadge(altMiles>0?(altNet/altMiles):0)}</div>
-          <div style="margin-top:6px" class="muted">
-            Δ vs normal: ${dMiles>=0?'+':''}${dMiles.toFixed(1)} mi • ${dSecs>=0?'+':''}${fmtHrs(Math.abs(dSecs))}
-            • Fuel ${dFuel>=0?'+':''}$${dFuel.toFixed(2)} • Net ${dNet>=0?'+':''}$${dNet.toFixed(2)}
-          </div>
-          <div class="muted" style="margin-top:6px">Source: ORS avoid tollways (free)</div>
-        `;
-        status.textContent='Done.';
-      }catch(e){ console.error(e); status.textContent=e.message||'No-toll compare failed.'; }
     });
 
     // Driver: HOS ETA (simple FMCSA property rules)
@@ -421,11 +399,12 @@
         const hosSecs=computeHosETA(lastTotals.seconds,onDutyUsed,needBreak);
         const now=new Date(); now.setHours(dutyStart[0],dutyStart[1],0,0);
         const arrival=new Date(now.getTime()+hosSecs*1000);
-        plan.innerHTML = `<div><span class="pill">HOS ETA</span> ${arrival.toLocaleString()}</div>
-                          <div style="margin-top:6px" class="muted">Includes 11/14 limits, 30-min break after 8 driving, and 10-hr resets.</div>`;
+
+        plan.innerHTML = `
+          <div class="rowline"><span class="pill">HOS ETA</span><span class="big">${arrival.toLocaleString()}</span></div>
+          <div class="rowline muted">Rules: 11/14 limits, 30-min break after 8 driving, 10-hr resets</div>
+        `;
         statusHos.textContent='Done.';
-        // also show nearby at origin
-        setTimeout(fetchNearbyForDriver,200);
         updateMapLinks();
       }catch(e){ console.error(e); statusHos.textContent=e.message; }
     });
@@ -437,25 +416,9 @@
       document.getElementById('googleLink').href= `https://www.google.com/maps/dir/?api=1&origin=${o.lat},${o.lon}&destination=${d.lat},${d.lon}&travelmode=driving`;
     }
 
-    async function fetchNearbyForDriver(){
-      try{
-        if(!lastGeos) return;
-        const origin=lastGeos[0];
-        const fuel = await nearby(origin,'truck_fuel');
-        const svc  = await nearby(origin,'service');
-        const plan=document.getElementById('hosPlan');
-        const fmt = (res)=> (res.items||[]).map(i=>`• ${i.name} — ${(i.distance_m/1000).toFixed(1)} km <a href="${i.maps_url}" target="_blank">map</a>`).join('<br/>') || 'No results';
-        plan.innerHTML += `<div class="hr" style="margin:12px 0"></div>
-          <div><span class="pill">Nearby truck stops (origin)</span></div>
-          <div class="muted" style="margin-top:6px">${fmt(fuel)}</div>
-          <div style="margin-top:10px"><span class="pill">Nearby service</span></div>
-          <div class="muted" style="margin-top:6px">${fmt(svc)}</div>`;
-      }catch(e){ console.error(e); }
-    }
-
     // === Truck Presets ===
     const PRESETS = {
-      box26:   { mpg: 8.0, tank: 70 },
+      box26:   { mpg: 8.0, tank: 26 },
       daycab:  { mpg: 6.5, tank: 120 },
       sleeper: { mpg: 6.0, tank: 150 }
     };
@@ -517,3 +480,4 @@
   </script>
 </body>
 </html>
+
