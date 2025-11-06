@@ -1,7 +1,4 @@
-/api/geocode        /.netlify/functions/geocode        200
-/api/route          /.netlify/functions/route          200
-/api/fuel           /.netlify/functions/fuel           200
-/api/nearby         /.netlify/functions/nearby         200
-/api/tolls          /.netlify/functions/tolls          200
-/api/route_notoll   /.netlify/functions/route_notoll   200
-/*                  /index.html                        200
+/api/geocode  /.netlify/functions/geocode  200
+/api/route    /.netlify/functions/route    200
+/api/fuel     /.netlify/functions/fuel     200
+/*            /index.html                  200
