@@ -5,21 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Diesel Buddy — Trip Cost & Driver Tools</title>
 
-  <!-- Favicon using your SVG name (spaces encoded) -->
-  <link rel="icon" href="/diesel%20buddy%20logo.svg" type="image/svg+xml">
+  <!-- Single favicon reference with cache busting -->
+ <link rel="icon" href="/db-logo.svg" type="image/svg+xml">
 
   <style>
     /* ===== Diesel Buddy Copper Light Theme ===== */
     :root{
-      --bg:#f7fafc;           /* page */
-      --ink:#0b1220;          /* primary text */
-      --muted:#4a5b73;        /* secondary text */
-      --card:#ffffff;         /* card bg */
-      --border:#e6eef6;       /* card border */
-      --pill:#f4f7fb;         /* pills/chips */
-      --accent:#c4762b;       /* ← copper from your logo */
-      --accent-2:#2b7ac4;     /* cool blue complement (links) */
-      --danger:#c13b3b;       /* alerts */
+      --bg:#f7fafc;
+      --ink:#0b1220;
+      --muted:#4a5b73;
+      --card:#ffffff;
+      --border:#e6eef6;
+      --pill:#f4f7fb;
+      --accent:#c4762b;
+      --accent-2:#2b7ac4;
+      --danger:#c13b3b;
       --shadow:0 14px 35px rgba(16,38,76,.08);
       --radius:16px;
     }
@@ -35,82 +35,164 @@
     }
     header{
       display:flex; gap:12px; align-items:center; padding:16px 20px; position:sticky; top:0; z-index:10;
-      background:rgba(255,255,255,.85); backdrop-filter: blur(8px); border-bottom:1px solid var(--border);
+      background:rgba(255,255,255,.92); backdrop-filter: blur(12px); 
+      border-bottom:1px solid var(--border);
+      box-shadow: 0 4px 16px rgba(16,38,76,.04);
     }
-    /* Use the external SVG file (spaces encoded in src) */
     .logo{
-      width:40px;height:40px;border-radius:12px; display:block; object-fit:contain; background:transparent;
-      box-shadow: 0 0 0 1px rgba(196,118,43,.18), 0 6px 18px rgba(196,118,43,.12);
+      width:40px;height:40px;border-radius:12px; display:block; object-fit:contain; 
+      background:transparent;
+      box-shadow: 0 0 0 1px rgba(196,118,43,.2), 0 8px 20px rgba(196,118,43,.15);
+      transition: transform .2s ease, box-shadow .2s ease;
     }
-    .brand h1{font-size:18px; margin:0}
-    .tag{color:var(--muted); font-size:12px; margin-top:2px}
+    .logo:hover{
+      transform: scale(1.05);
+      box-shadow: 0 0 0 1px rgba(196,118,43,.3), 0 12px 28px rgba(196,118,43,.2);
+    }
+    .brand h1{font-size:18px; margin:0; font-weight:700; color:var(--ink)}
+    .tag{color:var(--muted); font-size:12px; margin-top:2px; font-weight:500}
 
     .wrap{max-width:1120px; margin:20px auto; padding:0 16px}
     .row{display:grid; grid-template-columns:1fr 380px; gap:16px}
-    .card{background:var(--card); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); padding:18px}
-    h3{margin:0 0 12px} label{display:block; font-weight:600; margin:10px 0 6px}
+    @media(max-width:900px){.row{grid-template-columns:1fr}}
+    
+    .card{
+      background:var(--card); border:1px solid var(--border); 
+      border-radius:var(--radius); box-shadow:var(--shadow); padding:20px;
+      transition: box-shadow .3s ease;
+    }
+    .card:hover{box-shadow: 0 16px 40px rgba(16,38,76,.1)}
+    
+    h3{margin:0 0 14px; font-size:16px; font-weight:700; color:var(--ink)} 
+    label{display:block; font-weight:600; margin:12px 0 6px; font-size:13px; color:var(--ink)}
+    
     input, select{
-      width:100%; padding:12px; border-radius:12px; border:1px solid var(--border);
-      background:#fff; color:var(--ink); outline:none; transition:.15s box-shadow,.15s border-color,.06s transform;
+      width:100%; padding:12px 14px; border-radius:12px; border:1px solid var(--border);
+      background:#fff; color:var(--ink); outline:none; 
+      transition:.2s box-shadow,.2s border-color,.08s transform;
+      font-size:14px;
     }
-    input:focus, select:focus{ border-color:var(--accent); box-shadow:0 0 0 3px rgba(196,118,43,.18); transform: translateY(-1px)}
+    input:focus, select:focus{ 
+      border-color:var(--accent); 
+      box-shadow:0 0 0 4px rgba(196,118,43,.12); 
+      transform: translateY(-1px)
+    }
+    
     .btn{
-      border:0; border-radius:12px; padding:12px 16px; font-weight:700; cursor:pointer;
+      border:0; border-radius:12px; padding:12px 18px; font-weight:700; cursor:pointer;
       background:linear-gradient(180deg, var(--accent), #a56426); color:#fff;
-      box-shadow: 0 10px 24px rgba(196,118,43,.18), 0 1px 0 rgba(255,255,255,.7) inset;
-      transition: transform .08s ease, filter .2s ease;
+      box-shadow: 0 10px 24px rgba(196,118,43,.2), 0 1px 0 rgba(255,255,255,.7) inset;
+      transition: transform .1s ease, filter .2s ease, box-shadow .2s ease;
+      font-size:14px;
     }
-    .btn:hover{ transform: translateY(-1px); filter: saturate(1.05); }
-    .btn.secondary{background:#fff7ef; color:#7a431b; border:1px solid #f3d5b5; box-shadow:none}
-    .btn.secondary:hover{ box-shadow:0 8px 24px rgba(16,38,76,.08); border-color:#eec8a1; }
-    .btn.danger{background:#f3e7e7; color:#8b2b2b; border:1px solid #edd2d2}
-    .btn-row{display:flex; gap:10px; flex-wrap:wrap}
+    .btn:hover{ 
+      transform: translateY(-2px); 
+      filter: saturate(1.08); 
+      box-shadow: 0 14px 32px rgba(196,118,43,.25), 0 1px 0 rgba(255,255,255,.7) inset;
+    }
+    .btn:active{transform: translateY(0px)}
+    
+    .btn.secondary{
+      background:#fff7ef; color:#7a431b; border:1px solid #f3d5b5; 
+      box-shadow:0 4px 12px rgba(196,118,43,.08)
+    }
+    .btn.secondary:hover{ 
+      box-shadow:0 8px 24px rgba(196,118,43,.15); 
+      border-color:#eec8a1; 
+      background:#fff4ea;
+    }
+    
+    .btn.danger{
+      background:#fef3f3; color:#8b2b2b; border:1px solid #f5d7d7;
+      box-shadow:0 4px 12px rgba(193,59,59,.08)
+    }
+    .btn.danger:hover{
+      background:#fce8e8; border-color:#edd2d2;
+      box-shadow:0 8px 24px rgba(193,59,59,.15)
+    }
+    
+    .btn-row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
 
     .grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:12px}
     .grid2{display:grid; grid-template-columns:repeat(2,1fr); gap:12px}
-    .pill{display:inline-block; background:var(--pill); padding:6px 10px; border-radius:999px; font-size:12px; color:#5a4030; border:1px solid var(--border)}
-    .muted{color:var(--muted); font-size:12px}
-    .result{font-size:16px; line-height:1.55}
-    .stops{display:grid; gap:8px}
-    .stop-row{display:grid; grid-template-columns:1fr auto; gap:8px}
-    .stop-row .rm{padding:8px 12px}
-    .hr{height:1px;background:var(--border); margin:12px 0}
+    @media(max-width:600px){
+      .grid3,.grid2{grid-template-columns:1fr}
+    }
+    
+    .pill{
+      display:inline-block; background:var(--pill); padding:6px 11px; 
+      border-radius:999px; font-size:12px; color:#5a4030; border:1px solid var(--border);
+      font-weight:600;
+    }
+    .muted{color:var(--muted); font-size:13px}
+    .result{font-size:15px; line-height:1.6}
+    
+    .stops{display:grid; gap:8px; margin-top:10px}
+    .stop-row{display:grid; grid-template-columns:1fr auto; gap:8px; align-items:center}
+    .stop-row .rm{padding:8px 14px; font-size:13px}
+    .hr{height:1px;background:var(--border); margin:16px 0}
 
-    .tabs{display:flex; gap:8px; margin-bottom:12px}
-    .tab{padding:10px 14px; border-radius:12px; border:1px solid var(--border); background:#fff; cursor:pointer; color:#7a431b}
-    .tab.active{background:#fff4ea; color:#7a431b; border-color:#f3d5b5}
+    .tabs{display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap}
+    .tab{
+      padding:11px 16px; border-radius:12px; border:1px solid var(--border); 
+      background:#fff; cursor:pointer; color:#7a431b; font-weight:600;
+      transition: all .2s ease; font-size:14px;
+    }
+    .tab:hover{border-color:#f3d5b5; background:#fffcf8}
+    .tab.active{
+      background:linear-gradient(135deg, #fff4ea, #fff7ef); 
+      color:#7a431b; border-color:#f3d5b5;
+      box-shadow: 0 4px 12px rgba(196,118,43,.12);
+    }
 
     .compare{display:grid; gap:12px}
-    .cmp-card{border:1px solid var(--border); background:#fff; border-radius:14px; padding:12px}
+    .cmp-card{
+      border:1px solid var(--border); background:#fff; border-radius:14px; padding:14px;
+      transition: box-shadow .2s ease, transform .2s ease;
+    }
+    .cmp-card:hover{
+      box-shadow: 0 8px 20px rgba(16,38,76,.08);
+      transform: translateY(-2px);
+    }
     .cmp-title{display:flex;align-items:center;justify-content:space-between; gap:8px}
-    .cmp-title h4{margin:0;font-size:14px}
-    .x{background:#fff7ef;color:#7a431b;border:1px solid #f3d5b5; border-radius:10px; padding:6px 10px; cursor:pointer}
+    .cmp-title h4{margin:0;font-size:14px; font-weight:700}
+    .x{
+      background:#fff7ef;color:#7a431b;border:1px solid #f3d5b5; 
+      border-radius:10px; padding:6px 12px; cursor:pointer; font-size:12px;
+      transition: all .2s ease; font-weight:600;
+    }
+    .x:hover{background:#ffeedd; border-color:#eec8a1}
 
-    .linkbar a{color:var(--accent-2); text-decoration:none; margin-right:10px}
-    .linkbar a:hover{text-decoration:underline}
-    .status{min-height:20px;margin-top:8px}
+    .linkbar{margin-top:8px}
+    .linkbar a{
+      color:var(--accent-2); text-decoration:none; margin-right:16px; font-weight:600;
+      transition: color .2s ease;
+    }
+    .linkbar a:hover{text-decoration:underline; color:#1e5f9a}
+    .status{min-height:20px;margin-top:8px; font-weight:500}
 
-    /* RPM badges */
-    .badge{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:700}
+    .badge{
+      display:inline-block;padding:5px 10px;border-radius:999px;
+      font-size:12px;font-weight:700; margin-left:6px
+    }
     .badge.green{background:#0f2b22;color:#2ee6a3;border:1px solid #1f6a54}
     .badge.yellow{background:#2b2a0f;color:#ffd966;border:1px solid #726915}
     .badge.red{background:#2b0f11;color:#ff9aa2;border:1px solid #7a2228}
 
-    /* Driver plan spacing */
-    #hosPlan .rowline{display:flex; gap:12px; align-items:center; margin-top:8px}
-    #hosPlan .big{font-size:18px; font-weight:700}
+    #hosPlan .rowline{display:flex; gap:12px; align-items:center; margin-top:10px}
+    #hosPlan .big{font-size:18px; font-weight:700; color:var(--accent)}
   </style>
 </head>
-<link rel="icon" href="/logo.svg" type="image/svg+xml">
 
 <body>
   <header>
-    <!-- IMPORTANT: spaces in filename are URL-encoded as %20 -->
+    <!-- Use consistent filename with cache busting -->
     <img class="logo"
-     src="/logo.svg?v=1"
-     alt="Diesel Buddy logo"
-     width="40"
-     height="40" />
+    src="/db-logo.svg"
+    alt="Diesel Buddy logo"
+    width="40"
+    height="40"
+    onerror="this.style.display='none'" />
 
     <div class="brand">
       <h1>Diesel Buddy</h1>
@@ -158,13 +240,12 @@
             </div>
           </div>
 
-          <!-- Truck preset selector -->
           <div class="grid2" style="margin-top:12px">
             <div>
               <label>Truck Preset</label>
               <select id="preset">
                 <option value="custom">Custom</option>
-                <option value="box26">26’ Box (Non-CDL)</option>
+                <option value="box26">26' Box (Non-CDL)</option>
                 <option value="daycab">Day Cab</option>
                 <option value="sleeper">Sleeper</option>
               </select>
@@ -190,7 +271,7 @@
           <div id="range" class="result" style="margin-top:6px;"></div>
         </div>
       </div>
-      <img class="logo" src="/logo.svg?v=1" alt="Diesel Buddy logo" width="40" height="40" />
+
       <div class="card" style="margin-top:16px">
         <h3>Compare (max 3)</h3>
         <div id="compare" class="compare"></div>
@@ -257,7 +338,7 @@
     function fmtHrs(s){const h=Math.floor(s/3600);const m=Math.round((s%3600)/60);return `${h}h ${m}m`; }
     async function api(path, body){ const r=await fetch(path,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body||{})}); if(!r.ok) throw new Error(await r.text()); return r.json(); }
 
-    // ===== Free fuel baseline (fallback if API not available) =====
+    // ===== Free fuel baseline =====
     const STATE_DIESEL = {
       AL:3.90, AK:4.50, AZ:4.30, AR:3.85, CA:5.20, CO:4.10, CT:4.70, DE:4.10, FL:4.20, GA:4.05,
       HI:5.60, ID:4.40, IL:4.80, IN:4.35, IA:4.10, KS:3.95, KY:4.10, LA:3.85, ME:4.60, MD:4.35,
@@ -275,7 +356,7 @@
       return { price:null, meta:'manual' };
     }
 
-    // API helpers (backend)
+    // API helpers
     async function geocode(q){ const data=await api('/api/geocode',{q}); if(!data.length) throw new Error('No results for '+q); const {lat,lon}=data[0]; return {lat:parseFloat(lat),lon:parseFloat(lon)}; }
     async function route(a,b){ return api('/api/route',{origin:a,dest:b}); }
     async function fuelPriceByCoords(coords){ try{ return await api('/api/fuel',{coords}); } catch(e){ return {price:null,meta:'manual'}; } }
@@ -314,7 +395,7 @@
         const geos=[]; for(const n of names) geos.push(await geocode(n));
         lastGeos = geos; lastNames = names;
 
-        // Auto fuel price: prefer backend; else fallback to state baseline
+        // Auto fuel price
         let autoFuel=null;
         try{
           const originFuel = await fuelPriceByCoords(geos[0]);
@@ -351,14 +432,13 @@
           <div style="margin-top:6px"><span class="pill">$/mi (gross)</span> ${rpmGross.toFixed(2)} • <span class="pill">$/mi (net)</span> ${rpmNet.toFixed(2)} ${rpmBadge(rpmNet)}</div>
         `;
 
-        // Tank range & refuel alert
+        // Tank range
         if(tank>0 && mpg>0){
           const range = tank * mpg; const stopsNeeded = Math.max(0, Math.ceil((miles - range)/range));
           rangeEl.innerHTML = `<div><span class="pill">Tank range</span> ~${Math.round(range)} mi (${tank} gal @ ${mpg} mpg)</div>
           <div style="margin-top:6px"><span class="pill">Refuel alert</span> ${stopsNeeded>0? '<span style="color:var(--danger)">Plan '+stopsNeeded+' stop(s)</span>':'No refuel needed'}</div>`;
         }
 
-        // Save to Compare
         saveBtn.onclick=()=>{ saveEntry({
           title:`${names[0]} → ${names[names.length-1]}`,
           legs:legLabels.join(' · '),
@@ -378,7 +458,7 @@
       }catch(e){ console.error(e); status.textContent=e.message; }
     });
 
-    // Driver: HOS ETA (simple FMCSA property rules)
+    // Driver: HOS ETA
     function computeHosETA(totalSeconds, onDutyUsedHours, needBreakAuto=true){
       const H=3600; let driving=11*H, duty=14*H-(onDutyUsedHours*H); if(duty<0) duty=0;
       let needBreak=needBreakAuto, t=0; let remain=totalSeconds;
@@ -389,105 +469,4 @@
         if(drive===0){
           if(windowCap===0 || driving===0){ t+=10*H; driving=11*H; duty=14*H; needBreak=true; }
           else if(needBreak){ t+=30*60; duty-=30*60; if(duty<0) duty=0; needBreak=false; }
-          else { t+=10*H; driving=11*H; duty=14*H; needBreak=true; }
-        } else {
-          remain-=drive; t+=drive; driving-=drive; duty-=drive;
-          if(needBreak && drive>=8*H) needBreak=false;
-          if(driving===0 || duty===0){ t+=10*H; driving=11*H; duty=14*H; needBreak=true; }
-        }
-      }
-      return t;
-    }
-
-    document.getElementById('calcHos').addEventListener('click', ()=>{
-      const statusHos=document.getElementById('statusHos'); const plan=document.getElementById('hosPlan');
-      if(!lastTotals||!lastGeos){ statusHos.textContent='Run Owner/Calc first.'; return; }
-      statusHos.textContent='Planning…';
-      try{
-        const dutyStart=(document.getElementById('dutyStart').value||'07:00').split(':').map(Number);
-        const onDutyUsed=parseFloat(document.getElementById('onDutyUsed').value||'0');
-        const needBreak=document.getElementById('needBreak').value==='auto';
-        const hosSecs=computeHosETA(lastTotals.seconds,onDutyUsed,needBreak);
-        const now=new Date(); now.setHours(dutyStart[0],dutyStart[1],0,0);
-        const arrival=new Date(now.getTime()+hosSecs*1000);
-
-        plan.innerHTML = `
-          <div class="rowline"><span class="pill">HOS ETA</span><span class="big">${arrival.toLocaleString()}</span></div>
-          <div class="rowline muted">Rules: 11/14 limits, 30-min break after 8 driving, 10-hr resets</div>
-        `;
-        statusHos.textContent='Done.';
-        updateMapLinks();
-      }catch(e){ console.error(e); statusHos.textContent=e.message; }
-    });
-
-    function updateMapLinks(){
-      if(!lastGeos) return;
-      const o=lastGeos[0], d=lastGeos[lastGeos.length-1];
-      document.getElementById('appleLink').href = `https://maps.apple.com/?saddr=${o.lat},${o.lon}&daddr=${d.lat},${d.lon}&dirflg=d`;
-      document.getElementById('googleLink').href= `https://www.google.com/maps/dir/?api=1&origin=${o.lat},${o.lon}&destination=${d.lat},${d.lon}&travelmode=driving`;
-    }
-
-    // === Truck Presets ===
-    const PRESETS = {
-      box26:   { mpg: 8.0, tank: 70 },
-      daycab:  { mpg: 6.5, tank: 120 },
-      sleeper: { mpg: 6.0, tank: 150 }
-    };
-    function applyPreset(key){
-      const p = PRESETS[key]; if(!p) return;
-      const mpg = document.getElementById('mpg');
-      const tank = document.getElementById('tank');
-      if(mpg)  mpg.value  = p.mpg;
-      if(tank) tank.value = p.tank;
-      saveFields();
-    }
-    const presetSel = document.getElementById('preset');
-    if(presetSel){
-      presetSel.addEventListener('change', ()=>{
-        if(presetSel.value !== 'custom') applyPreset(presetSel.value);
-      });
-    }
-
-    // === Field autosave & restore ===
-    const FIELD_IDS = ['start','end','fuel','mpg','rate','tank','refuelPct'];
-    function saveFields(){
-      const obj = {};
-      FIELD_IDS.forEach(id => { const el=document.getElementById(id); if(el) obj[id]=el.value; });
-      const preset = document.getElementById('preset'); if(preset) obj.preset = preset.value;
-      localStorage.setItem('db_fields', JSON.stringify(obj));
-    }
-    function loadFields(){
-      try{
-        const raw = localStorage.getItem('db_fields'); if(!raw) return;
-        const obj = JSON.parse(raw);
-        FIELD_IDS.forEach(id => { if(obj[id]!=null && document.getElementById(id)) document.getElementById(id).value = obj[id]; });
-        if(obj.preset && document.getElementById('preset')){
-          document.getElementById('preset').value = obj.preset;
-        }
-      }catch{}
-    }
-    FIELD_IDS.forEach(id => { const el=document.getElementById(id); if(el) el.addEventListener('input', saveFields); });
-    if(presetSel) presetSel.addEventListener('change', saveFields);
-
-    // Enter-to-calc UX
-    document.addEventListener('keydown', (e)=>{
-      if(e.key==='Enter' && document.getElementById('owner').style.display!=='none'){
-        const active = document.activeElement;
-        const isInput = active && (active.tagName==='INPUT' || active.tagName==='SELECT');
-        if(isInput){ e.preventDefault(); document.getElementById('calc').click(); }
-      }
-    });
-
-    // Init
-    loadSaves();
-    loadFields();
-
-    // RPM Badge function
-    function rpmBadge(v){
-      if(isNaN(v)) return '';
-      const cls = v>=2 ? 'green' : (v>=1.5 ? 'yellow' : 'red');
-      return `<span class="badge ${cls}">$${v.toFixed(2)} /mi</span>`;
-    }
-  </script>
-</body>
-</html>
+          else { t+=10
