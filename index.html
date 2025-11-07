@@ -4,17 +4,21 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Diesel Buddy — Trip Cost & Driver Tools</title>
+
+  <!-- Favicon using your SVG name (spaces encoded) -->
+  <link rel="icon" href="/diesel%20buddy%20logo.svg" type="image/svg+xml">
+
   <style>
-    /* ===== 2026 Light Theme ===== */
+    /* ===== Diesel Buddy Copper Light Theme ===== */
     :root{
       --bg:#f7fafc;           /* page */
       --ink:#0b1220;          /* primary text */
       --muted:#4a5b73;        /* secondary text */
       --card:#ffffff;         /* card bg */
       --border:#e6eef6;       /* card border */
-      --pill:#f0f5fb;         /* pills/chips */
-      --accent:#1f9e74;       /* green accent */
-      --accent-2:#2a7ae4;     /* blue accent */
+      --pill:#f4f7fb;         /* pills/chips */
+      --accent:#c4762b;       /* ← copper from your logo */
+      --accent-2:#2b7ac4;     /* cool blue complement (links) */
       --danger:#c13b3b;       /* alerts */
       --shadow:0 14px 35px rgba(16,38,76,.08);
       --radius:16px;
@@ -22,22 +26,21 @@
 
     *{box-sizing:border-box; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale}
     body{
-      margin:0; color:var(--ink); background:
-        radial-gradient(1200px 600px at 90% -20%, rgba(42,122,228,.07), transparent 60%),
-        radial-gradient(1000px 600px at -20% 10%, rgba(31,158,116,.08), transparent 60%),
+      margin:0; color:var(--ink);
+      background:
+        radial-gradient(1200px 600px at 90% -20%, rgba(43,122,196,.07), transparent 60%),
+        radial-gradient(1000px 600px at -20% 10%, rgba(196,118,43,.08), transparent 60%),
         var(--bg);
       font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
     }
     header{
       display:flex; gap:12px; align-items:center; padding:16px 20px; position:sticky; top:0; z-index:10;
-      background:rgba(255,255,255,.8); backdrop-filter: blur(8px); border-bottom:1px solid var(--border);
+      background:rgba(255,255,255,.85); backdrop-filter: blur(8px); border-bottom:1px solid var(--border);
     }
-    .logo{width:40px;height:40px;border-radius:12px;
-      background:
-        radial-gradient(16px 16px at 30% 30%, rgba(0,0,0,.06), transparent 60%),
-        linear-gradient(135deg, var(--accent-2), var(--accent));
-      display:grid;place-items:center; color:#06271d; font-weight:900; letter-spacing:.5px;
-      box-shadow: 0 0 0 1px rgba(31,158,116,.15), 0 10px 30px rgba(31,158,116,.15);
+    /* Use the external SVG file (spaces encoded in src) */
+    .logo{
+      width:40px;height:40px;border-radius:12px; display:block; object-fit:contain; background:transparent;
+      box-shadow: 0 0 0 1px rgba(196,118,43,.18), 0 6px 18px rgba(196,118,43,.12);
     }
     .brand h1{font-size:18px; margin:0}
     .tag{color:var(--muted); font-size:12px; margin-top:2px}
@@ -50,22 +53,22 @@
       width:100%; padding:12px; border-radius:12px; border:1px solid var(--border);
       background:#fff; color:var(--ink); outline:none; transition:.15s box-shadow,.15s border-color,.06s transform;
     }
-    input:focus, select:focus{ border-color:var(--accent); box-shadow:0 0 0 3px rgba(31,158,116,.18); transform: translateY(-1px)}
+    input:focus, select:focus{ border-color:var(--accent); box-shadow:0 0 0 3px rgba(196,118,43,.18); transform: translateY(-1px)}
     .btn{
       border:0; border-radius:12px; padding:12px 16px; font-weight:700; cursor:pointer;
-      background:linear-gradient(180deg, var(--accent), #178862); color:#fff;
-      box-shadow: 0 10px 24px rgba(31,158,116,.18), 0 1px 0 rgba(255,255,255,.7) inset;
+      background:linear-gradient(180deg, var(--accent), #a56426); color:#fff;
+      box-shadow: 0 10px 24px rgba(196,118,43,.18), 0 1px 0 rgba(255,255,255,.7) inset;
       transition: transform .08s ease, filter .2s ease;
     }
     .btn:hover{ transform: translateY(-1px); filter: saturate(1.05); }
-    .btn.secondary{background:#eef4fb; color:#17365f; border:1px solid var(--border); box-shadow:none}
-    .btn.secondary:hover{ box-shadow:0 8px 24px rgba(16,38,76,.08); border-color:#d7e4f3; }
+    .btn.secondary{background:#fff7ef; color:#7a431b; border:1px solid #f3d5b5; box-shadow:none}
+    .btn.secondary:hover{ box-shadow:0 8px 24px rgba(16,38,76,.08); border-color:#eec8a1; }
     .btn.danger{background:#f3e7e7; color:#8b2b2b; border:1px solid #edd2d2}
     .btn-row{display:flex; gap:10px; flex-wrap:wrap}
 
     .grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:12px}
     .grid2{display:grid; grid-template-columns:repeat(2,1fr); gap:12px}
-    .pill{display:inline-block; background:var(--pill); padding:6px 10px; border-radius:999px; font-size:12px; color:#37506d; border:1px solid var(--border)}
+    .pill{display:inline-block; background:var(--pill); padding:6px 10px; border-radius:999px; font-size:12px; color:#5a4030; border:1px solid var(--border)}
     .muted{color:var(--muted); font-size:12px}
     .result{font-size:16px; line-height:1.55}
     .stops{display:grid; gap:8px}
@@ -74,14 +77,14 @@
     .hr{height:1px;background:var(--border); margin:12px 0}
 
     .tabs{display:flex; gap:8px; margin-bottom:12px}
-    .tab{padding:10px 14px; border-radius:12px; border:1px solid var(--border); background:#fff; cursor:pointer; color:#17365f}
-    .tab.active{background:#eef4fb; color:#0b2466; border-color:#d7e4f3}
+    .tab{padding:10px 14px; border-radius:12px; border:1px solid var(--border); background:#fff; cursor:pointer; color:#7a431b}
+    .tab.active{background:#fff4ea; color:#7a431b; border-color:#f3d5b5}
 
     .compare{display:grid; gap:12px}
     .cmp-card{border:1px solid var(--border); background:#fff; border-radius:14px; padding:12px}
     .cmp-title{display:flex;align-items:center;justify-content:space-between; gap:8px}
     .cmp-title h4{margin:0;font-size:14px}
-    .x{background:#eef4fb;color:#16335a;border:1px solid var(--border); border-radius:10px; padding:6px 10px; cursor:pointer}
+    .x{background:#fff7ef;color:#7a431b;border:1px solid #f3d5b5; border-radius:10px; padding:6px 10px; cursor:pointer}
 
     .linkbar a{color:var(--accent-2); text-decoration:none; margin-right:10px}
     .linkbar a:hover{text-decoration:underline}
@@ -100,7 +103,8 @@
 </head>
 <body>
   <header>
-    <img class="logo" src="logo.svg?v=3" alt="Diesel Buddy logo" width="40" height="40" />
+    <!-- IMPORTANT: spaces in filename are URL-encoded as %20 -->
+    <img class="logo" src="/diesel%20buddy%20logo.svg?v=3" alt="Diesel Buddy logo" width="40" height="40" />
     <div class="brand">
       <h1>Diesel Buddy</h1>
       <div class="tag">Owner & Driver tools — free data only</div>
@@ -347,7 +351,7 @@
           <div style="margin-top:6px"><span class="pill">Refuel alert</span> ${stopsNeeded>0? '<span style="color:var(--danger)">Plan '+stopsNeeded+' stop(s)</span>':'No refuel needed'}</div>`;
         }
 
-        // Save to Compare (always armed after a run)
+        // Save to Compare
         saveBtn.onclick=()=>{ saveEntry({
           title:`${names[0]} → ${names[names.length-1]}`,
           legs:legLabels.join(' · '),
@@ -363,7 +367,7 @@
 
         status.textContent='Done.';
         updateMapLinks();
-        saveFields(); // persist inputs
+        saveFields();
       }catch(e){ console.error(e); status.textContent=e.message; }
     });
 
@@ -480,4 +484,3 @@
   </script>
 </body>
 </html>
-
