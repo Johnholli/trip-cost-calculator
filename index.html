@@ -4,25 +4,144 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Diesel Buddy — Trip Cost & Driver Tools</title>
-  <link rel="icon" href="logo.svg?v=3" type="image/svg+xml">
+  <link rel="icon" href="/db-logo.svg" type="image/svg+xml">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <style>
-    /* ... (YOUR ENTIRE CSS GOES HERE - UNCHANGED - FROM YOUR WORKING FILE) ... */
-    /* For brevity here, but DO use your full style block as before! */
     :root{
-      --bg:#f7fafc;--ink:#0b1220;--muted:#4a5b73;--card:#ffffff;--border:#e6eef6;--pill:#f0f5fb;--accent:#1f9e74;--accent-2:#2a7ae4;--danger:#c13b3b;--shadow:0 14px 35px rgba(16,38,76,.08);--radius:16px;
+      --bg:#f7fafc; --ink:#0b1220; --muted:#4a5b73; --card:#ffffff; --border:#e6eef6;
+      --pill:#f4f7fb; --accent:#c4762b; --accent-2:#2b7ac4; --danger:#c13b3b; --shadow:0 14px 35px rgba(16,38,76,.08); --radius:16px;
     }
-    /* ...rest of your CSS... */
-    #map { height: 300px; border-radius: 14px; margin: 20px 0 0 0; box-shadow: 0 2px 10px 0 rgba(42,122,228,.09); }
+    body{
+      margin:0;color:var(--ink);background:
+      radial-gradient(1200px 600px at 90% -20%, rgba(43,122,196,.07), transparent 60%),
+      radial-gradient(1000px 600px at -20% 10%, rgba(196,118,43,.08), transparent 60%),
+      var(--bg);
+      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+    }
+    header{
+      display:flex;gap:12px;align-items:center;padding:16px 20px;position:sticky;top:0;z-index:10;
+      background:rgba(255,255,255,.85);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);
+    }
+    .logo{width:60px;height:60px;border-radius:12px;display:block;object-fit:contain;background:transparent;
+      box-shadow:0 0 0 1px rgba(196,118,43,.18),0 6px 18px rgba(196,118,43,.12);}
+    .brand h1{font-size:18px;margin:0}
+    .tag{color:var(--muted);font-size:12px;margin-top:2px}
+    .wrap{max-width:1120px;margin:20px auto;padding:0 16px}
+    .row{display:grid;grid-template-columns:1fr 400px;gap:16px}
+    .card {
+      border-radius: 20px;
+      box-shadow: 0 6px 28px 0 rgba(43,122,196,.09), 0 1.5px 6px 0 rgba(196,118,43,.04);
+      background: linear-gradient(180deg, #fff 85%, #f8fafb 100%);
+      border: 1px solid #ececec;
+      padding:18px;
+    }
+    h3{margin:0 0 12px}label{display:block;font-weight:600;margin:10px 0 6px}
+    input, select {
+      border-radius: 14px;
+      border: 1.5px solid #e0e5ea;
+      font-size: 16px;
+      font-weight: 500;
+      background: #fbfcfd;
+      padding: 13px 12px;
+      transition: border 0.18s, box-shadow 0.14s;
+    }
+    input:focus, select:focus {
+      border-color: #c4762b;
+      box-shadow: 0 0 0 2px #ffe9d2;
+    }
+    .btn {
+      border-radius: 14px;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      background: linear-gradient(90deg, #ffce91 25%, #e48c2d 100%);
+      color: #4b2b0b;
+      box-shadow: 0 3px 8px rgba(196,118,43,.09);
+      border:0;
+      padding:12px 16px;
+      cursor:pointer;
+      transition:transform .08s,filter .12s;
+    }
+    .btn:hover { filter:brightness(1.07) saturate(1.06);}
+    .btn.secondary{background:#fff7ef;color:#7a431b;border:1px solid #f3d5b5;box-shadow:none}
+    .btn.secondary:hover{box-shadow:0 8px 24px rgba(16,38,76,.08);border-color:#eec8a1;}
+    .btn.danger{background:#f3e7e7;color:#8b2b2b;border:1px solid #edd2d2}
+    .btn-row{display:flex;gap:10px;flex-wrap:wrap}
+    .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+    .pill{display:inline-block;background:var(--pill);padding:6px 10px;border-radius:999px;font-size:12px;color:#5a4030;border:1px solid var(--border)}
+    .muted{color:var(--muted);font-size:12px}
+    .result{font-size:16px;line-height:1.55}
+    .stops{display:grid;gap:8px}
+    .stop-row{display:grid;grid-template-columns:1fr auto;gap:8px}
+    .stop-row .rm{padding:8px 12px}
+    .hr{height:1px;background:var(--border);margin:12px 0}
+    .tabs{display:flex;gap:8px;margin-bottom:12px}
+    .tab{padding:10px 14px;border-radius:12px;border:1px solid var(--border);background:#fff;cursor:pointer;color:#7a431b}
+    .tab.active{background:#fff4ea;color:#7a431b;border-color:#f3d5b5}
+    .compare{display:grid;gap:12px}
+    .cmp-card{border:1px solid var(--border);background:#fff;border-radius:14px;padding:12px}
+    .cmp-title{display:flex;align-items:center;justify-content:space-between;gap:8px}
+    .cmp-title h4{margin:0;font-size:14px}
+    .x{background:#fff7ef;color:#7a431b;border:1px solid #f3d5b5;border-radius:10px;padding:6px 10px;cursor:pointer}
+    .linkbar a{color:var(--accent-2);text-decoration:none;margin-right:10px}
+    .linkbar a:hover{text-decoration:underline}
+    .status{min-height:20px;margin-top:8px}
+    .badge{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:700}
+    .badge.green{background:#0f2b22;color:#2ee6a3;border:1px solid #1f6a54}
+    .badge.yellow{background:#2b2a0f;color:#ffd966;border:1px solid #726915}
+    .badge.red{background:#2b0f11;color:#ff9aa2;border:1px solid #7a2228}
+    #hosPlan .rowline{display:flex;gap:12px;align-items:center;margin-top:8px}
+    #hosPlan .big{font-size:18px;font-weight:700}
+    .city-suggest-list {
+      background: #fff;
+      border-radius: 18px;
+      border: 1px solid #f3d5b5;
+      box-shadow: 0 4px 24px rgba(43,122,196,0.13);
+      position:absolute;
+      z-index:1000;
+      max-height:190px;
+      overflow-y:auto;
+      width: 98%;
+      margin-top:2px;
+      left:1%;
+    }
+    .city-suggest-item {
+      padding: 10px 14px;
+      cursor: pointer;
+      font-size: 15px;
+      color: #473117;
+      border-bottom:1px solid #f6e3ce;
+      background: #fff;
+      transition: background .11s;
+    }
+    .city-suggest-item:last-child { border-bottom: none; }
+    .city-suggest-item:hover { background: #fff5ea; }
+    #fuelMeta {
+      background: #fff7ed;
+      border-radius: 10px;
+      padding: 8px 13px;
+      margin-top: 8px;
+      display: inline-block;
+      color: #a45c1e;
+      font-weight: 600;
+      font-size: 13px;
+      box-shadow: 0 2px 8px 0 rgba(196,118,43,.08);
+    }
   </style>
 </head>
 <body>
   <header>
-    <img class="logo" src="logo.svg?v=3" alt="Diesel Buddy logo" width="40" height="40" />
+    <img class="logo"
+      src="/db-logo.svg"
+      alt="Diesel Buddy logo"
+      width="60"
+      height="60"
+      onerror="this.style.display='none'" />
     <div class="brand">
       <h1>Diesel Buddy</h1>
-      <div class="tag">Owner & Driver tools — free data only</div>
+      <div class="tag">Owner & Driver tools</div>
     </div>
     <div style="flex:1"></div>
     <div class="btn-row">
@@ -30,30 +149,45 @@
       <button id="clear" class="btn danger">Clear</button>
     </div>
   </header>
-
   <div class="wrap">
     <div class="tabs">
       <button class="tab active" data-panel="owner">Owner/Calc</button>
       <button class="tab" data-panel="driver">Driver</button>
       <button class="tab" data-panel="vendors">Vendors</button>
     </div>
-
     <div id="owner" class="panel" style="display:block">
       <div class="row">
         <div class="card">
+    <div id="driver" class="panel" style="display:none">
+      <div class="card">
+        <h3>Driver Tools (Coming Soon)</h3>
+        <p>Plan hours of service, rest breaks, logbook tips, and more for drivers!</p>
+      </div>
+    </div>
+
+    <div id="vendors" class="panel" style="display:none">
+      <div class="card">
+        <h3>Vendors & Discounts (Coming Soon)</h3>
+        <p>Find preferred fuel stops, repair shops, tire discounts, and trucker perks here.</p>
+      </div>
+  </div>
           <h3>Route</h3>
           <label>Start (City, State)</label>
-          <input id="start" type="text" placeholder="Burlington, NJ"/>
+          <div style="position:relative;">
+            <input id="start" type="text" placeholder="Los Angeles, CA" autocomplete="off"/>
+            <div id="citySuggestBox" class="city-suggest-list" style="display:none"></div>
+          </div>
           <div class="stops" id="stops"></div>
           <button class="btn secondary" id="addStop">+ Add Stop</button>
           <label style="margin-top:14px">Final Drop (City, State)</label>
-          <input id="end" type="text" placeholder="Beltsville, MD"/>
+          <input id="end" type="text" placeholder="Miami, FL"/>
           <div class="hr"></div>
           <h3>Truck & Rate</h3>
           <div class="grid3">
             <div>
-              <label>Fuel Price ($/gal) <span class="pill" id="fuelMeta">manual</span></label>
+              <label>Fuel Price ($/gal)</label>
               <input id="fuel" type="number" step="0.01" value="3.45"/>
+              <div id="fuelMeta" class="muted"></div>
             </div>
             <div>
               <label>MPG</label>
@@ -69,7 +203,7 @@
               <label>Truck Preset</label>
               <select id="preset">
                 <option value="custom">Custom</option>
-                <option value="box26">26’ Box (Non-CDL)</option>
+                <option value="box26">26' Box (Non-CDL)</option>
                 <option value="daycab">Day Cab</option>
                 <option value="sleeper">Sleeper</option>
               </select>
@@ -84,12 +218,11 @@
             <span class="status muted" id="status"></span>
           </div>
         </div>
-
         <div class="card">
           <h3>Results</h3>
           <div id="results" class="result">Enter locations and click Calculate.</div>
           <div class="hr"></div>
-          <div id="map"></div>
+          <div id="map" style="height:300px; border-radius:16px; margin-top:16px; box-shadow:0 8px 24px rgba(43,122,196,0.08)"></div>
           <div class="muted">Tank range & refuel alerts:</div>
           <div id="range" class="result" style="margin-top:6px;"></div>
         </div>
@@ -99,70 +232,143 @@
         <div id="compare" class="compare"></div>
       </div>
     </div>
-
-    <!-- Driver tab -->
-    <div id="driver" class="panel" style="display:none">
-      <div class="row">
-        <div class="card">
-          <h3>Driver Tools</h3>
-          <div class="grid2">
-            <div><label>Start Duty Time</label><input id="dutyStart" type="time" value="07:00"/></div>
-            <div><label>Current On-Duty (hrs)</label><input id="onDutyUsed" type="number" step="0.25" value="0"/></div>
-          </div>
-          <div class="grid2" style="margin-top:12px">
-            <div><label>30-min Break</label><select id="needBreak"><option value="auto">Auto</option><option value="taken">Already taken</option></select></div>
-            <div><label>HOS Mode</label><select id="hosMode"><option value="property">Property (11/14/10)</option></select></div>
-          </div>
-          <div class="btn-row" style="margin-top:14px">
-            <button class="btn" id="calcHos">HOS ETA</button>
-            <span class="status muted" id="statusHos"></span>
-          </div>
-          <div class="hr"></div>
-          <h3>Open in Maps</h3>
-          <div class="linkbar">
-            <a id="appleLink" href="#" target="_blank">Open in Apple Maps</a>
-            <a id="googleLink" href="#" target="_blank">Open in Google Maps</a>
-          </div>
-        </div>
-        <div class="card">
-          <h3>HOS-Aware Plan</h3>
-          <div id="hosPlan" class="result">
-            <div class="muted">Run Owner/Calc first; then HOS ETA.</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Vendor tab -->
-    <div id="vendors" class="panel" style="display:none">
-      <div class="card">
-        <h3>Vendors & Deals (Coming Soon)</h3>
-        <div class="result muted">Promote diesel discounts, service specials, tires & tow bundles.</div>
-      </div>
-    </div>
   </div>
-
   <script>
-    // === KEYS (replace with your real tokens) ===
-    const MAPBOX_TOKEN = 'pk.eyJ1IjoiamhvbGx5ODgiLCJhIjoiY21ocXI0ZDBuMHJpYzJscWN2cnMxbGRkMyJ9.49ztcPC2Gkt6NkYHiL-IBg';
-    const RAPIDAPI_KEY = '6141aad7b6msh58fd9568d3b752ap140ee5jsn26a240bba2ac';
+    // ------------  KEYS (insert yours)  ----------------
+    const MAPBOX_TOKEN = 'pk.eyJ1IjoiamhvbGx5ODgiLCJhIjoiY21ocXI0ZDBuMHJpYzJscWN2cnMxbGRkMyJ9.49ztcPC2Gkt6NkYHiL-IBg'; // <--- PASTE your Mapbox token here (keep quotes)
+    const RAPIDAPI_KEY = '6141aad7b6msh58fd9568d3b752ap140ee5jsn26a240bba2ac'; // <--- PASTE your RapidAPI key here if using live diesel
+    // ---------------------------------------------------
+    
+    // City autocomplete
+    const CITY_STATE_LIST = [
+      "New York, NY", "Los Angeles, CA", "Chicago, IL", "Houston, TX", "Phoenix, AZ", "Philadelphia, PA",
+      "San Antonio, TX", "San Diego, CA", "Dallas, TX", "San Jose, CA", "Austin, TX", "Jacksonville, FL",
+      "Fort Worth, TX", "Columbus, OH", "San Francisco, CA", "Charlotte, NC", "Indianapolis, IN",
+      "Seattle, WA", "Denver, CO", "Washington, DC", "Boston, MA", "El Paso, TX", "Nashville, TN",
+      "Detroit, MI", "Oklahoma City, OK", "Portland, OR", "Las Vegas, NV", "Memphis, TN",
+      "Louisville, KY", "Baltimore, MD", "Milwaukee, WI", "Albuquerque, NM", "Tucson, AZ",
+      "Fresno, CA", "Mesa, AZ", "Sacramento, CA", "Atlanta, GA", "Kansas City, MO", "Colorado Springs, CO",
+      "Miami, FL", "Raleigh, NC", "Omaha, NE", "Long Beach, CA", "Virginia Beach, VA",
+      "Oakland, CA", "Minneapolis, MN", "Tulsa, OK", "Arlington, TX", "Tampa, FL"
+    ];
+    const startInput = document.getElementById('start');
+    const citySuggestBox = document.getElementById('citySuggestBox');
+    if (startInput) {
+      startInput.addEventListener('input', function() {
+        const v = this.value.trim().toLowerCase();
+        citySuggestBox.innerHTML = '';
+        if (v.length < 2) { citySuggestBox.style.display = 'none'; return; }
+        const matches = CITY_STATE_LIST.filter(cs => cs.toLowerCase().includes(v)).slice(0,8);
+        if (matches.length) {
+          citySuggestBox.style.display = 'block';
+          matches.forEach(cs => {
+            const div = document.createElement('div');
+            div.textContent = cs;
+            div.className = 'city-suggest-item';
+            div.onclick = () => {
+              startInput.value = cs;
+              citySuggestBox.style.display = 'none';
+              startInput.blur();
+            };
+            citySuggestBox.appendChild(div);
+          });
+        } else {
+          citySuggestBox.style.display = 'none';
+        }
+      });
+      document.addEventListener('click', (e) => {
+        if (!citySuggestBox.contains(e.target) && e.target !== startInput) {
+          citySuggestBox.style.display = 'none';
+        }
+      });
+    }
 
-    // Tab switching
-    document.querySelectorAll('.tab').forEach(t=>{
-      t.onclick=()=>{
-        document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-        document.querySelectorAll('.panel').forEach(x=>x.style.display='none');
-        t.classList.add('active'); document.getElementById(t.dataset.panel).style.display='block';
-      };
-    });
+    // Presets logic
+    const PRESETS = {
+      box26:   { mpg: 8.0, tank: 70 },
+      daycab:  { mpg: 6.5, tank: 120 },
+      sleeper: { mpg: 6.0, tank: 150 }
+    };
+    function applyPreset(key){
+      const p = PRESETS[key]; if(!p) return;
+      const mpg = document.getElementById('mpg');
+      const tank = document.getElementById('tank');
+      if(mpg)  mpg.value  = p.mpg;
+      if(tank) tank.value = p.tank;
+      saveFields();
+    }
+    const presetSel = document.getElementById('preset');
+    if(presetSel){
+      presetSel.addEventListener('change', ()=>{
+        if(presetSel.value !== 'custom') applyPreset(presetSel.value);
+      });
+    }
 
-    // Stops UI
-    const stopsDiv=document.getElementById('stops');
-    document.getElementById('addStop').addEventListener('click',()=>addStop('Pickup (e.g., Rockaway, NJ)'));
-    function addStop(ph){const row=document.createElement('div');row.className='stop-row';row.innerHTML=`<input type="text" class="stop" placeholder="${ph||''}"/><button class="btn secondary rm">Remove</button>`;row.querySelector('.rm').onclick=()=>row.remove();stopsDiv.appendChild(row);}
+    // Compare/save logic
+    const saveBtn=document.getElementById('save'); const clearBtn=document.getElementById('clear'); const cmpDiv=document.getElementById('compare');
+    function loadSaves(){ const a=JSON.parse(localStorage.getItem('db_saves')||'[]'); renderCompare(a); }
+    function saveEntry(entry){ let a=JSON.parse(localStorage.getItem('db_saves')||'[]'); if(a.length>=3) a.shift(); a.push(entry); localStorage.setItem('db_saves',JSON.stringify(a)); renderCompare(a); }
+    function removeEntry(i){ let a=JSON.parse(localStorage.getItem('db_saves')||'[]'); a.splice(i,1); localStorage.setItem('db_saves',JSON.stringify(a)); renderCompare(a); }
+    function renderCompare(a){ cmpDiv.innerHTML=''; a.forEach((e,i)=>{ const el=document.createElement('div'); el.className='cmp-card'; el.innerHTML=`<div class="cmp-title"><h4>${e.title}</h4><button class="x" data-i="${i}">Remove</button></div>
+      <div class="muted">${e.legs}</div>
+      <div class="result" style="margin-top:6px">
+        <div><span class="pill">Miles</span> ${e.miles} • <span class="pill">ETA</span> ${e.eta}</div>
+        <div><span class="pill">Fuel</span> ${e.gallons} gal ($${e.fuelCost})</div>
+        <div><span class="pill">Gross</span> $${e.rate} • <span class="pill">Net</span> $${e.net}</div>
+        <div><span class="pill">$/mi (gross)</span> ${e.rpmGross} • <span class="pill">$/mi (net)</span> ${e.rpmNet} ${rpmBadge(parseFloat(e.rpmNet))}</div>
+      </div>`; cmpDiv.appendChild(el); el.querySelector('.x').onclick=()=>removeEntry(i); }); }
+    clearBtn.addEventListener('click',()=>{ ['start','end','fuel','mpg','rate','tank','refuelPct'].forEach(id=>document.getElementById(id).value=''); document.querySelectorAll('.stop').forEach(s=>s.value=''); document.getElementById('results').textContent=''; document.getElementById('range').textContent=''; document.getElementById('status').textContent=''; saveFields(); });
+    function saveFields(){
+      const obj = {};
+      ['start','end','fuel','mpg','rate','tank','refuelPct'].forEach(id => { const el=document.getElementById(id); if(el) obj[id]=el.value; });
+      const preset = document.getElementById('preset'); if(preset) obj.preset = preset.value;
+      localStorage.setItem('db_fields', JSON.stringify(obj));
+    }
+    function loadFields(){
+      try{
+        const raw = localStorage.getItem('db_fields'); if(!raw) return;
+        const obj = JSON.parse(raw);
+        ['start','end','fuel','mpg','rate','tank','refuelPct'].forEach(id => { if(obj[id]!=null && document.getElementById(id)) document.getElementById(id).value = obj[id]; });
+        if(obj.preset && document.getElementById('preset')){
+          document.getElementById('preset').value = obj.preset;
+        }
+      }catch{}
+    }
+    ['start','end','fuel','mpg','rate','tank','refuelPct'].forEach(id => { const el=document.getElementById(id); if(el) el.addEventListener('input', saveFields); });
+    if(presetSel) presetSel.addEventListener('change', saveFields);
 
-    // Mapbox Geocode
-    async function geocode(q){
+    // Map display, using Mapbox truck route polyline
+    let map, routeLayer, mapMarkers = [];
+    async function showMapRoute(points) {
+      if (!map) {
+        map = L.map('map').setView([37.8, -96.9], 4);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 18,
+          attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+      }
+      if(routeLayer) { map.removeLayer(routeLayer); routeLayer = null; }
+      mapMarkers.forEach(m => map.removeLayer(m));
+      mapMarkers = [];
+      if(points && points.length > 1) {
+        let allCoords = [];
+        for(let i=0;i<points.length-1;i++) {
+          const leg = await route(points[i], points[i+1]);
+          if(leg.geometry && leg.geometry.coordinates) {
+            allCoords.push(...leg.geometry.coordinates.map(([lon, lat]) => [lat, lon]));
+          }
+        }
+        if(allCoords.length) {
+          routeLayer = L.polyline(allCoords, {color:'#2b7ac4',weight:5,opacity:0.7}).addTo(map);
+          map.fitBounds(routeLayer.getBounds(), {padding:[40,40]});
+          mapMarkers.push(L.marker([points[0].lat, points[0].lon], {title:'Start'}).addTo(map));
+          mapMarkers.push(L.marker([points[points.length-1].lat, points[points.length-1].lon], {title:'End'}).addTo(map));
+        }
+      }
+    }
+
+    // --- REAL GEOCODE & TRUCK ROUTING
+    async function geocode(q) {
       const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(q)}.json?access_token=${MAPBOX_TOKEN}&limit=1`;
       const res = await fetch(url);
       const data = await res.json();
@@ -172,34 +378,51 @@
       }
       throw new Error('Geocoding failed for: ' + q);
     }
+    async function route(a, b) {
+  const url =
+    `https://api.mapbox.com/directions/v5/mapbox/driving-traffic/${a.lon},${a.lat};${b.lon},${b.lat}` +
+    `?access_token=${MAPBOX_TOKEN}` +
+    `&geometries=geojson&overview=full` +
+    `&annotations=distance,duration` +
+    `&approaches=unrestricted;unrestricted` +
+    `&exclude=ferry,toll`;
+  const res = await fetch(url);
+  const data = await res.json();
+  if(data.routes && data.routes.length > 0) {
+    const r = data.routes[0];
+    return {
+      meters: r.distance,
+      seconds: r.duration,
+      geometry: r.geometry
+    };
+  }
+  throw new Error('Routing failed');
+}
 
-    // Mapbox Route
-    async function route(a,b){
-      const url =
-        `https://api.mapbox.com/directions/v5/mapbox/driving-traffic/${a.lon},${a.lat};${b.lon},${b.lat}` +
-        `?access_token=${MAPBOX_TOKEN}` +
-        `&geometries=geojson&overview=full` +
-        `&annotations=distance,duration` +
-        `&approaches=unrestricted;unrestricted` +
-        `&exclude=ferry,toll`;
-      const res = await fetch(url);
-      const data = await res.json();
-      if(data.routes && data.routes.length > 0) {
-        const r = data.routes[0];
-        r.geometry = r.geometry || { coordinates: [[a.lon, a.lat], [b.lon, b.lat]] };
-        return r;
-      }
-      throw new Error('Routing failed');
+    // Diesel fallback and live price (RapidAPI + fallback)
+    const STATE_DIESEL = {
+      AL:3.90, AK:4.50, AZ:4.30, AR:3.85, CA:5.20, CO:4.10, CT:4.70, DE:4.10, FL:4.20, GA:4.05,
+      HI:5.60, ID:4.40, IL:4.80, IN:4.35, IA:4.10, KS:3.95, KY:4.10, LA:3.85, ME:4.60, MD:4.35,
+      MA:4.50, MI:4.25, MN:4.10, MS:3.85, MO:3.90, MT:4.30, NE:4.00, NV:4.70, NH:4.45, NJ:4.45,
+      NM:4.10, NY:4.65, NC:4.05, ND:4.15, OH:4.10, OK:3.80, OR:4.70, PA:4.85, RI:4.45, SC:3.95,
+      SD:4.10, TN:3.95, TX:3.90, UT:4.25, VT:4.55, VA:4.05, WA:5.00, WV:4.20, WI:4.05, WY:4.15,
+      DC:4.75
+    };
+    function parseStateAbbr(s){ if(!s) return null; const parts=s.split(','); if(parts.length<2) return null; const ab=parts[parts.length-1].trim().toUpperCase(); return ab.slice(0,2); }
+    function fallbackFuelFromInputs(){ const a=parseStateAbbr(document.getElementById('start').value); const b=parseStateAbbr(document.getElementById('end').value);
+      const pa=STATE_DIESEL[a]||null, pb=STATE_DIESEL[b]||null;
+      if(pa && pb) return { price: (pa+pb)/2, meta:'baseline' };
+      if(pa) return { price: pa, meta:'baseline' };
+      if(pb) return { price: pb, meta:'baseline' };
+      return { price:null, meta:'manual' };
     }
-
-    // Live diesel price from RapidAPI
     async function getLiveDieselPrice(city, state) {
       try {
         const resp = await fetch(
           `https://gas-price.p.rapidapi.com/gasPrice/from-city?city=${encodeURIComponent(city)}&state=${encodeURIComponent(state)}&country=usa`,
           {
             headers: {
-              'X-RapidAPI-Key': '6141aad7b6msh58fd9568d3b752ap140ee5jsn26a240bba2ac',
+              'X-RapidAPI-Key': RAPIDAPI_KEY,
               'X-RapidAPI-Host': 'gas-price.p.rapidapi.com'
             }
           }
@@ -221,103 +444,14 @@
       }
     }
 
-    // Map/route drawing
-    let map, routeLayer, mapMarkers = [];
-    function ensureMap() {
-      if (!map) {
-        map = L.map('map').setView([39, -98], 5);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          maxZoom: 18,
-          attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
-      }
-    }
-    function clearMapRoute() {
-      if (routeLayer) { map.removeLayer(routeLayer); routeLayer = null; }
-      (mapMarkers||[]).forEach(m => map.removeLayer(m));
-      mapMarkers = [];
-    }
-    async function showMapRoute(points) {
-      ensureMap(); clearMapRoute();
-      if(points && points.length > 1) {
-        let allCoords = [];
-        for(let i=0;i<points.length-1;i++) {
-          const leg = await route(points[i], points[i+1]);
-          if(leg.geometry && leg.geometry.coordinates) {
-            allCoords.push(...leg.geometry.coordinates.map(([lon, lat]) => [lat, lon]));
-          }
-        }
-        if(allCoords.length) {
-          routeLayer = L.polyline(allCoords, {color:'#2a7ae4',weight:5,opacity:0.7}).addTo(map);
-          map.fitBounds(routeLayer.getBounds(), {padding:[40,40]});
-          mapMarkers.push(L.marker([points[0].lat, points[0].lon], {title:'Start'}).addTo(map));
-          mapMarkers.push(L.marker([points[points.length-1].lat, points[points.length-1].lon], {title:'End'}).addTo(map));
-        }
-      }
-    }
-
-    // === Diesel baseline by state ===
-    const STATE_DIESEL = {
-      AL:3.90, AK:4.50, AZ:4.30, AR:3.85, CA:5.20, CO:4.10, CT:4.70, DE:4.10, FL:4.20, GA:4.05,
-      HI:5.60, ID:4.40, IL:4.80, IN:4.35, IA:4.10, KS:3.95, KY:4.10, LA:3.85, ME:4.60, MD:4.35,
-      MA:4.50, MI:4.25, MN:4.10, MS:3.85, MO:3.90, MT:4.30, NE:4.00, NV:4.70, NH:4.45, NJ:4.45,
-      NM:4.10, NY:4.65, NC:4.05, ND:4.15, OH:4.10, OK:3.80, OR:4.70, PA:4.85, RI:4.45, SC:3.95,
-      SD:4.10, TN:3.95, TX:3.90, UT:4.25, VT:4.55, VA:4.05, WA:5.00, WV:4.20, WI:4.05, WY:4.15,
-      DC:4.75
-    };
-    function parseStateAbbr(s){ if(!s) return null; const parts=s.split(','); if(parts.length<2) return null; const ab=parts[parts.length-1].trim().toUpperCase(); return ab.slice(0,2); }
-    function fallbackFuelFromInputs(){ const a=parseStateAbbr(document.getElementById('start').value); const b=parseStateAbbr(document.getElementById('end').value);
-      const pa=STATE_DIESEL[a]||null, pb=STATE_DIESEL[b]||null;
-      if(pa && pb) return { price: (pa+pb)/2, meta:'baseline' };
-      if(pa) return { price: pa, meta:'baseline' };
-      if(pb) return { price: pb, meta:'baseline' };
-      return { price:null, meta:'manual' };
-    }
-
-    // Presets
-    const PRESETS = {
-      box26:   { mpg: 8.0, tank: 70 },
-      daycab:  { mpg: 6.5, tank: 120 },
-      sleeper: { mpg: 6.0, tank: 150 }
-    };
-    function applyPreset(key){
-      const p = PRESETS[key]; if(!p) return;
-      const mpg = document.getElementById('mpg');
-      const tank = document.getElementById('tank');
-      if(mpg)  mpg.value  = p.mpg;
-      if(tank) tank.value = p.tank;
-      saveFields();
-    }
-    const presetSel = document.getElementById('preset');
-    if(presetSel){
-      presetSel.addEventListener('change', ()=>{
-        if(presetSel.value !== 'custom') applyPreset(presetSel.value);
-      });
-    }
-
-    // Save/Compare logic
-    const saveBtn=document.getElementById('save'); const clearBtn=document.getElementById('clear'); const cmpDiv=document.getElementById('compare');
-    function loadSaves(){ const a=JSON.parse(localStorage.getItem('db_saves')||'[]'); renderCompare(a); }
-    function saveEntry(entry){ let a=JSON.parse(localStorage.getItem('db_saves')||'[]'); if(a.length>=3) a.shift(); a.push(entry); localStorage.setItem('db_saves',JSON.stringify(a)); renderCompare(a); }
-    function removeEntry(i){ let a=JSON.parse(localStorage.getItem('db_saves')||'[]'); a.splice(i,1); localStorage.setItem('db_saves',JSON.stringify(a)); renderCompare(a); }
-    function renderCompare(a){ cmpDiv.innerHTML=''; a.forEach((e,i)=>{ const el=document.createElement('div'); el.className='cmp-card'; el.innerHTML=`<div class="cmp-title"><h4>${e.title}</h4><button class="x" data-i="${i}">Remove</button></div>
-      <div class="muted">${e.legs}</div>
-      <div class="result" style="margin-top:6px">
-        <div><span class="pill">Miles</span> ${e.miles} • <span class="pill">ETA</span> ${e.eta}</div>
-        <div><span class="pill">Fuel</span> ${e.gallons} gal ($${e.fuelCost})</div>
-        <div><span class="pill">Gross</span> $${e.rate} • <span class="pill">Net</span> $${e.net}</div>
-        <div><span class="pill">$/mi (gross)</span> ${e.rpmGross} • <span class="pill">$/mi (net)</span> ${e.rpmNet} ${rpmBadge(parseFloat(e.rpmNet))}</div>
-      </div>`; cmpDiv.appendChild(el); el.querySelector('.x').onclick=()=>removeEntry(i); }); }
-    clearBtn.addEventListener('click',()=>{ ['start','end','fuel','mpg','rate','tank','refuelPct'].forEach(id=>document.getElementById(id).value=''); document.querySelectorAll('.stop').forEach(s=>s.value=''); document.getElementById('results').textContent=''; document.getElementById('range').textContent=''; document.getElementById('status').textContent=''; saveFields(); });
-
-    // Badge
+    // Badge for $/mi
     function rpmBadge(v){
       if(isNaN(v)) return '';
       const cls = v>=2 ? 'green' : (v>=1.5 ? 'yellow' : 'red');
-      return `<span class="badge ${cls}">$${v.toFixed(2)} /mi</span>`;
+      return `<span class="badge ${cls}">${v.toFixed(2)} /mi</span>`;
     }
 
-    // Owner Calculate (main handler)
+    // CALCULATE!
     let lastGeos=null, lastNames=null, lastTotals=null;
     document.getElementById('calc').addEventListener('click', async ()=>{
       const start=document.getElementById('start').value.trim();
@@ -329,7 +463,6 @@
       const tank=parseFloat(document.getElementById('tank').value||'0');
       const status=document.getElementById('status'); const results=document.getElementById('results'); const rangeEl=document.getElementById('range'); const fuelMeta=document.getElementById('fuelMeta');
       results.textContent=''; rangeEl.textContent=''; status.textContent='Calculating…';
-
       try{
         if(!start||!end) throw new Error('Please enter Start and Final Drop.');
         const names=[start,...stops,end];
@@ -337,7 +470,7 @@
         lastGeos = geos; lastNames = names;
         await showMapRoute(geos);
 
-        // --- LIVE FUEL PRICE via RapidAPI ---
+        // LIVE FUEL PRICE via RAPIDAPI + FALLBACK
         let autoFuel = null;
         let liveFuelMeta = '';
         if (start.includes(',')) {
@@ -350,21 +483,21 @@
               autoFuel = livePrice.price;
               liveFuelMeta = livePrice.meta;
               document.getElementById('fuel').value = autoFuel.toFixed(2);
-              fuelMeta.textContent = liveFuelMeta;
+              if (fuelMeta) fuelMeta.textContent = liveFuelMeta;
             }
           }
         }
         if (autoFuel == null) {
           const fb = fallbackFuelFromInputs();
-          if(fb.price){ autoFuel = fb.price; fuelMeta.textContent=`auto: ${autoFuel.toFixed(2)} (baseline)`; }
-          else { fuelMeta.textContent='manual'; }
+          if(fb.price){ autoFuel = fb.price; if (fuelMeta) fuelMeta.textContent=`auto: ${autoFuel.toFixed(2)} (baseline)`; }
+          else if (fuelMeta) { fuelMeta.textContent='manual'; }
           if(Number.isFinite(autoFuel)) document.getElementById('fuel').value = autoFuel.toFixed(2);
         }
         const fuel = Number.isFinite(autoFuel) ? autoFuel : fuelInput;
 
-        // --- Route all legs
+        // Route all legs
         let totalMeters=0,totalSeconds=0; const legLabels=[];
-        for(let i=0;i<geos.length-1;i++){ const leg=await route(geos[i],geos[i+1]); totalMeters+=leg.distance; totalSeconds+=leg.duration; legLabels.push(`${names[i]} → ${names[i+1]}`); }
+        for(let i=0;i<geos.length-1;i++){ const leg=await route(geos[i],geos[i+1]); totalMeters+=leg.meters; totalSeconds+=leg.seconds; legLabels.push(`${names[i]} → ${names[i+1]}`); }
         lastTotals={meters:totalMeters, seconds:totalSeconds};
 
         const miles=totalMeters/1609.344;
@@ -375,7 +508,7 @@
         const rpmNet   = miles>0 ? (net/miles)   : 0;
 
         results.innerHTML = `
-          <div><span class="pill">One-way miles</span> <strong>${miles.toFixed(1)} mi</strong> • <span class="pill">ETA</span> ${fmtHrs(totalSeconds)}</div>
+          <div><span class="pill">One-way miles</span> <strong>${miles.toFixed(1)} mi</strong> • <span class="pill">ETA</span> ${Math.floor(totalSeconds/3600)}h ${Math.round((totalSeconds%3600)/60)}m</div>
           <div style="margin-top:6px"><span class="pill">Fuel used</span> ${gallons.toFixed(1)} gal • <span class="pill">Fuel cost</span> $ ${fuelCost.toFixed(2)}</div>
           <div style="margin-top:6px"><span class="pill">Gross pay</span> $ ${rate.toFixed(2)} • <span class="pill">Net after fuel</span> $ ${net.toFixed(2)}</div>
           <div style="margin-top:6px"><span class="pill">$/mi (gross)</span> ${rpmGross.toFixed(2)} • <span class="pill">$/mi (net)</span> ${rpmNet.toFixed(2)} ${rpmBadge(rpmNet)}</div>
@@ -393,7 +526,7 @@
           title:`${names[0]} → ${names[names.length-1]}`,
           legs:legLabels.join(' · '),
           miles:miles.toFixed(1),
-          eta:fmtHrs(totalSeconds),
+          eta:`${Math.floor(totalSeconds/3600)}h ${Math.round((totalSeconds%3600)/60)}m`,
           gallons:gallons.toFixed(1),
           fuelCost:fuelCost.toFixed(2),
           rate:rate.toFixed(2),
@@ -403,93 +536,26 @@
         }); status.textContent='Saved to Compare.'; };
 
         status.textContent='Done.';
-        updateMapLinks();
+        // Truck warning message
+        if (document.getElementById('preset').value !== 'custom') {
+          status.innerHTML += '<br><span style="color:#c4762b">Strict truck routing (low bridge avoidance, hazmat, etc) <b>coming soon</b>!<br>Currently using standard route, avoiding tolls/ferries.</span>';
+    }               
         saveFields();
       }catch(e){ console.error(e); status.textContent=e.message; }
     });
 
-    // Other logic (HOS, field autosave, compare, badge, etc.)
-    function fmtHrs(s){const h=Math.floor(s/3600);const m=Math.round((s%3600)/60);return `${h}h ${m}m`; }
-    function updateMapLinks(){
-      if(!lastGeos) return;
-      const o=lastGeos[0], d=lastGeos[lastGeos.length-1];
-      document.getElementById('appleLink').href = `https://maps.apple.com/?saddr=${o.lat},${o.lon}&daddr=${d.lat},${d.lon}&dirflg=d`;
-      document.getElementById('googleLink').href= `https://www.google.com/maps/dir/?api=1&origin=${o.lat},${o.lon}&destination=${d.lat},${d.lon}&travelmode=driving`;
-    }
-
-    // HOS logic (unchanged)
-    function computeHosETA(totalSeconds, onDutyUsedHours, needBreakAuto=true){
-      const H=3600; let driving=11*H, duty=14*H-(onDutyUsedHours*H); if(duty<0) duty=0;
-      let needBreak=needBreakAuto, t=0; let remain=totalSeconds;
-      while(remain>0){
-        const sessionCap = needBreak ? Math.min(driving, 8*H) : driving;
-        const windowCap = duty;
-        const drive = Math.max(0, Math.min(remain, sessionCap, windowCap));
-        if(drive===0){
-          if(windowCap===0 || driving===0){ t+=10*H; driving=11*H; duty=14*H; needBreak=true; }
-          else if(needBreak){ t+=30*60; duty-=30*60; if(duty<0) duty=0; needBreak=false; }
-          else { t+=10*H; driving=11*H; duty=14*H; needBreak=true; }
-        } else {
-          remain-=drive; t+=drive; driving-=drive; duty-=drive;
-          if(needBreak && drive>=8*H) needBreak=false;
-          if(driving===0 || duty===0){ t+=10*H; driving=11*H; duty=14*H; needBreak=true; }
-        }
-      }
-      return t;
-    }
-    document.getElementById('calcHos').addEventListener('click', ()=>{
-      const statusHos=document.getElementById('statusHos'); const plan=document.getElementById('hosPlan');
-      if(!lastTotals||!lastGeos){ statusHos.textContent='Run Owner/Calc first.'; return; }
-      statusHos.textContent='Planning…';
-      try{
-        const dutyStart=(document.getElementById('dutyStart').value||'07:00').split(':').map(Number);
-        const onDutyUsed=parseFloat(document.getElementById('onDutyUsed').value||'0');
-        const needBreak=document.getElementById('needBreak').value==='auto';
-        const hosSecs=computeHosETA(lastTotals.seconds,onDutyUsed,needBreak);
-        const now=new Date(); now.setHours(dutyStart[0],dutyStart[1],0,0);
-        const arrival=new Date(now.getTime()+hosSecs*1000);
-        plan.innerHTML = `
-          <div class="rowline"><span class="pill">HOS ETA</span><span class="big">${arrival.toLocaleString()}</span></div>
-          <div class="rowline muted">Rules: 11/14 limits, 30-min break after 8 driving, 10-hr resets</div>
-        `;
-        statusHos.textContent='Done.';
-        updateMapLinks();
-      }catch(e){ console.error(e); statusHos.textContent=e.message; }
-    });
-
-    // Field autosave/restore
-    const FIELD_IDS = ['start','end','fuel','mpg','rate','tank','refuelPct'];
-    function saveFields(){
-      const obj = {};
-      FIELD_IDS.forEach(id => { const el=document.getElementById(id); if(el) obj[id]=el.value; });
-      const preset = document.getElementById('preset'); if(preset) obj.preset = preset.value;
-      localStorage.setItem('db_fields', JSON.stringify(obj));
-    }
-    function loadFields(){
-      try{
-        const raw = localStorage.getItem('db_fields'); if(!raw) return;
-        const obj = JSON.parse(raw);
-        FIELD_IDS.forEach(id => { if(obj[id]!=null && document.getElementById(id)) document.getElementById(id).value = obj[id]; });
-        if(obj.preset && document.getElementById('preset')){
-          document.getElementById('preset').value = obj.preset;
-        }
-      }catch{}
-    }
-    FIELD_IDS.forEach(id => { const el=document.getElementById(id); if(el) el.addEventListener('input', saveFields); });
-    if(presetSel) presetSel.addEventListener('change', saveFields);
-
-    // Enter-to-calc UX
-    document.addEventListener('keydown', (e)=>{
-      if(e.key==='Enter' && document.getElementById('owner').style.display!=='none'){
-        const active = document.activeElement;
-        const isInput = active && (active.tagName==='INPUT' || active.tagName==='SELECT');
-        if(isInput){ e.preventDefault(); document.getElementById('calc').click(); }
-      }
-    });
-
-    // Init
-    loadSaves();
     loadFields();
+    loadSaves();
+    // --- Tab Switching Logic ---
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', function() {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    this.classList.add('active');
+    document.querySelectorAll('.panel').forEach(panel => panel.style.display = 'none');
+    document.getElementById(this.dataset.panel).style.display = 'block';
+  });
+});
+
   </script>
 </body>
 </html>
