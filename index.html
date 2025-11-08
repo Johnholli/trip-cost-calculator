@@ -158,6 +158,19 @@
     <div id="owner" class="panel" style="display:block">
       <div class="row">
         <div class="card">
+    <div id="driver" class="panel" style="display:none">
+      <div class="card">
+        <h3>Driver Tools (Coming Soon)</h3>
+        <p>Plan hours of service, rest breaks, logbook tips, and more for drivers!</p>
+      </div>
+    </div>
+
+    <div id="vendors" class="panel" style="display:none">
+      <div class="card">
+        <h3>Vendors & Discounts (Coming Soon)</h3>
+        <p>Find preferred fuel stops, repair shops, tire discounts, and trucker perks here.</p>
+      </div>
+    </div>
           <h3>Route</h3>
           <label>Start (City, State)</label>
           <div style="position:relative;">
@@ -533,6 +546,15 @@
 
     loadFields();
     loadSaves();
+    // --- Tab Switching Logic ---
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', function() {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    this.classList.add('active');
+    document.querySelectorAll('.panel').forEach(panel => panel.style.display = 'none');
+    document.getElementById(this.dataset.panel).style.display = 'block';
+  });
+});
 
   </script>
 </body>
