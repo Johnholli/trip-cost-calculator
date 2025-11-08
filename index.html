@@ -366,31 +366,25 @@
       throw new Error('Geocoding failed for: ' + q);
     }
     async function route(a, b) {
-      const url =
-        `https://api.mapbox.com/directions/v5/mapbox/driving-traffic/${a.lon},${a.lat};${b.lon},${b.lat}` +
-        `?access_token=${MAPBOX_TOKEN}` +
-        `&geometries=geojson&overview=full` +
-        `&annotations=distance,duration` +
-        `&approaches=unrestricted;unrestricted` +
-        `&exclude=ferry,toll` +
-        `&truck=true` +
-        `&truck-height=4.1` +
-        `&truck-width=2.6` +
-        `&truck-length=16.2` +
-        `&truck-weight=36300` +
-        `&truck-axle-count=5`;
-      const res = await fetch(url);
-      const data = await res.json();
-      if(data.routes && data.routes.length > 0) {
-        const r = data.routes[0];
-        return {
-          meters: r.distance,
-          seconds: r.duration,
-          geometry: r.geometry
-        };
-      }
-      throw new Error('Routing failed');
-    }
+  const url =
+    `https://api.mapbox.com/directions/v5/mapbox/driving-traffic/${a.lon},${a.lat};${b.lon},${b.lat}` +
+    `?access_token=${MAPBOX_TOKEN}` +
+    `&geometries=geojson&overview=full` +
+    `&annotations=distance,duration` +
+    `&approaches=unrestricted;unrestricted` +
+    `&exclude=ferry,toll`;
+  const res = await fetch(url);
+  const data = await res.json();
+  if(data.routes && data.routes.length > 0) {
+    const r = data.routes[0];
+    return {
+      meters: r.distance,
+      seconds: r.duration,
+      geometry: r.geometry
+    };
+  }
+  throw new Error('Routing failed');
+}
 
     // Diesel fallback and live price (RapidAPI + fallback)
     const STATE_DIESEL = {
@@ -529,6 +523,10 @@
         }); status.textContent='Saved to Compare.'; };
 
         status.textContent='Done.';
+        // Truck warning message
+        if (document.getElementById('preset').value !== 'custom') {
+          status.innerHTML += '<br><span style="color:#c4762b">Strict truck routing (low bridge avoidance, hazmat, etc) <b>coming soon</b>!<br>Currently using standard route, avoiding tolls/ferries.</span>';
+    }               
         saveFields();
       }catch(e){ console.error(e); status.textContent=e.message; }
     });
