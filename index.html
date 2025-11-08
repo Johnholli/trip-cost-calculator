@@ -158,37 +158,6 @@
     <div id="owner" class="panel" style="display:block">
       <div class="row">
         <div class="card">
-    <div id="driver" class="panel" style="display:none">
-      <div id="driver" class="panel" style="display:none">
-      <div class="row">
-        <div class="card">
-          <h3>Driver Tools</h3>
-          <div class="grid2">
-            <div><label>Start Duty Time</label><input id="dutyStart" type="time" value="07:00"/></div>
-            <div><label>Current On-Duty (hrs)</label><input id="onDutyUsed" type="number" step="0.25" value="0"/></div>
-          </div>
-          <div class="grid2" style="margin-top:12px">
-            <div><label>30-min Break</label><select id="needBreak"><option value="auto">Auto</option><option value="taken">Already taken</option></select></div>
-            <div><label>HOS Mode</label><select id="hosMode"><option value="property">Property (11/14/10)</option></select></div>
-          </div>
-          <div class="btn-row" style="margin-top:14px">
-            <button class="btn" id="calcHos">HOS ETA</button>
-            <span class="status muted" id="statusHos"></span>
-          </div>
-          <div class="hr"></div>
-          <h3>Open in Maps</h3>
-          <div class="linkbar">
-            <a id="appleLink" href="#" target="_blank">Open in Apple Maps</a>
-            <a id="googleLink" href="#" target="_blank">Open in Google Maps</a>
-          </div>
-        </div>
-
-    <div id="vendors" class="panel" style="display:none">
-      <div class="card">
-        <h3>Vendors & Discounts (Coming Soon)</h3>
-        <p>Find preferred fuel stops, repair shops, tire discounts, and trucker perks here.</p>
-      </div>
-  </div>
           <h3>Route</h3>
           <label>Start (City, State)</label>
           <div style="position:relative;">
@@ -564,16 +533,7 @@
 
     loadFields();
     loadSaves();
-    // --- Tab Switching Logic ---
-document.querySelectorAll('.tab').forEach(tab => {
-  tab.addEventListener('click', function() {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    this.classList.add('active');
-    document.querySelectorAll('.panel').forEach(panel => panel.style.display = 'none');
-    document.getElementById(this.dataset.panel).style.display = 'block';
-  });
-});
-
+    
   </script>
 </body>
 </html>
