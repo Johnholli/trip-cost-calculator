@@ -221,7 +221,12 @@
     </div>
   </div>
   <script>
-    // --- City Autocomplete List ---
+    // ------------  KEYS (insert yours)  ----------------
+    const MAPBOX_TOKEN = 'pk.eyJ1IjoiamhvbGx5ODgiLCJhIjoiY21ocXI0ZDBuMHJpYzJscWN2cnMxbGRkMyJ9.49ztcPC2Gkt6NkYHiL-IBg'; // <--- PASTE your Mapbox token here (keep quotes)
+    const RAPIDAPI_KEY = '6141aad7b6msh58fd9568d3b752ap140ee5jsn26a240bba2ac'; // <--- PASTE your RapidAPI key here if using live diesel
+    // ---------------------------------------------------
+    
+    // City autocomplete
     const CITY_STATE_LIST = [
       "New York, NY", "Los Angeles, CA", "Chicago, IL", "Houston, TX", "Phoenix, AZ", "Philadelphia, PA",
       "San Antonio, TX", "San Diego, CA", "Dallas, TX", "San Jose, CA", "Austin, TX", "Jacksonville, FL",
@@ -265,7 +270,7 @@
       });
     }
 
-    // --- Preset logic ---
+    // Presets logic
     const PRESETS = {
       box26:   { mpg: 8.0, tank: 70 },
       daycab:  { mpg: 6.5, tank: 120 },
@@ -285,12 +290,6 @@
         if(presetSel.value !== 'custom') applyPreset(presetSel.value);
       });
     }
-
-    // --- Owner/Calc & Map, Compare, Field Save ---
-    const stopsDiv=document.getElementById('stops');
-    document.getElementById('addStop').addEventListener('click',()=>addStop('Pickup (e.g., Rockaway, NJ)'));
-    function addStop(ph){const row=document.createElement('div');row.className='stop-row';row.innerHTML=`<input type="text" class="stop" placeholder="${ph||''}"/><button class="btn secondary rm">Remove</button>`;row.querySelector('.rm').onclick=()=>row.remove();stopsDiv.appendChild(row);}
-    function fmtHrs(s){const h=Math.floor(s/3600);const m=Math.round((s%3600)/60);return `${h}h ${m}m`; }
 
     // Compare/save logic
     const saveBtn=document.getElementById('save'); const clearBtn=document.getElementById('clear'); const cmpDiv=document.getElementById('compare');
@@ -325,10 +324,10 @@
     ['start','end','fuel','mpg','rate','tank','refuelPct'].forEach(id => { const el=document.getElementById(id); if(el) el.addEventListener('input', saveFields); });
     if(presetSel) presetSel.addEventListener('change', saveFields);
 
-    // --- Map logic ---
+    // Map display, using Mapbox truck route polyline
     let map, routeLayer, mapMarkers = [];
-    function showMapRoute(points) {
-      if(!map) {
+    async function showMapRoute(points) {
+      if (!map) {
         map = L.map('map').setView([37.8, -96.9], 4);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           maxZoom: 18,
@@ -339,14 +338,61 @@
       mapMarkers.forEach(m => map.removeLayer(m));
       mapMarkers = [];
       if(points && points.length > 1) {
-        routeLayer = L.polyline(points.map(p => [p.lat, p.lon]), {color:'#2b7ac4',weight:5,opacity:0.7}).addTo(map);
-        map.fitBounds(routeLayer.getBounds(), {padding:[40,40]});
-        mapMarkers.push(L.marker([points[0].lat, points[0].lon], {title:'Start'}).addTo(map));
-        mapMarkers.push(L.marker([points[points.length-1].lat, points[points.length-1].lon], {title:'End'}).addTo(map));
+        let allCoords = [];
+        for(let i=0;i<points.length-1;i++) {
+          const leg = await route(points[i], points[i+1]);
+          if(leg.geometry && leg.geometry.coordinates) {
+            allCoords.push(...leg.geometry.coordinates.map(([lon, lat]) => [lat, lon]));
+          }
+        }
+        if(allCoords.length) {
+          routeLayer = L.polyline(allCoords, {color:'#2b7ac4',weight:5,opacity:0.7}).addTo(map);
+          map.fitBounds(routeLayer.getBounds(), {padding:[40,40]});
+          mapMarkers.push(L.marker([points[0].lat, points[0].lon], {title:'Start'}).addTo(map));
+          mapMarkers.push(L.marker([points[points.length-1].lat, points[points.length-1].lon], {title:'End'}).addTo(map));
+        }
       }
     }
 
-    // --- RapidAPI diesel price + fallback ---
+    // --- REAL GEOCODE & TRUCK ROUTING
+    async function geocode(q) {
+      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(q)}.json?access_token=${MAPBOX_TOKEN}&limit=1`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if(data.features && data.features.length > 0) {
+        const [lon, lat] = data.features[0].center;
+        return {lat, lon};
+      }
+      throw new Error('Geocoding failed for: ' + q);
+    }
+    async function route(a, b) {
+      const url =
+        `https://api.mapbox.com/directions/v5/mapbox/driving-traffic/${a.lon},${a.lat};${b.lon},${b.lat}` +
+        `?access_token=${MAPBOX_TOKEN}` +
+        `&geometries=geojson&overview=full` +
+        `&annotations=distance,duration` +
+        `&approaches=unrestricted;unrestricted` +
+        `&exclude=ferry,toll` +
+        `&truck=true` +
+        `&truck-height=4.1` +
+        `&truck-width=2.6` +
+        `&truck-length=16.2` +
+        `&truck-weight=36300` +
+        `&truck-axle-count=5`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if(data.routes && data.routes.length > 0) {
+        const r = data.routes[0];
+        return {
+          meters: r.distance,
+          seconds: r.duration,
+          geometry: r.geometry
+        };
+      }
+      throw new Error('Routing failed');
+    }
+
+    // Diesel fallback and live price (RapidAPI + fallback)
     const STATE_DIESEL = {
       AL:3.90, AK:4.50, AZ:4.30, AR:3.85, CA:5.20, CO:4.10, CT:4.70, DE:4.10, FL:4.20, GA:4.05,
       HI:5.60, ID:4.40, IL:4.80, IN:4.35, IA:4.10, KS:3.95, KY:4.10, LA:3.85, ME:4.60, MD:4.35,
@@ -363,14 +409,13 @@
       if(pb) return { price: pb, meta:'baseline' };
       return { price:null, meta:'manual' };
     }
-    // --- INSERT YOUR RAPIDAPI KEY BELOW ---
     async function getLiveDieselPrice(city, state) {
       try {
         const resp = await fetch(
           `https://gas-price.p.rapidapi.com/gasPrice/from-city?city=${encodeURIComponent(city)}&state=${encodeURIComponent(state)}&country=usa`,
           {
             headers: {
-              'X-RapidAPI-Key': '6141aad7b6msh58fd9568d3b752ap140ee5jsn26a240bba2ac', 
+              'X-RapidAPI-Key': RAPIDAPI_KEY,
               'X-RapidAPI-Host': 'gas-price.p.rapidapi.com'
             }
           }
@@ -391,15 +436,15 @@
         return null;
       }
     }
-    async function geocode(q) { return {lat:34+(Math.random()-0.5)*2, lon:-118+(Math.random()-0.5)*2}; }
-    async function route(a,b) { return {meters:4500000+Math.random()*10000,seconds:140000+Math.random()*1000}; }
-    async function fuelPriceByCoords(coords) { return {price:null}; }
-    function updateMapLinks(){}
+
+    // Badge for $/mi
     function rpmBadge(v){
       if(isNaN(v)) return '';
       const cls = v>=2 ? 'green' : (v>=1.5 ? 'yellow' : 'red');
       return `<span class="badge ${cls}">${v.toFixed(2)} /mi</span>`;
     }
+
+    // CALCULATE!
     let lastGeos=null, lastNames=null, lastTotals=null;
     document.getElementById('calc').addEventListener('click', async ()=>{
       const start=document.getElementById('start').value.trim();
@@ -416,7 +461,8 @@
         const names=[start,...stops,end];
         const geos=[]; for(const n of names) geos.push(await geocode(n));
         lastGeos = geos; lastNames = names;
-        showMapRoute(geos);
+        await showMapRoute(geos);
+
         // LIVE FUEL PRICE via RAPIDAPI + FALLBACK
         let autoFuel = null;
         let liveFuelMeta = '';
@@ -424,7 +470,7 @@
           const [cityRaw, stateRaw] = start.split(',');
           const city = cityRaw.trim();
           const state = stateRaw.trim().toUpperCase();
-          if (city && state.length === 2) {
+          if (city && state.length === 2 && RAPIDAPI_KEY && RAPIDAPI_KEY !== 'YOUR_RAPIDAPI_KEY') {
             const livePrice = await getLiveDieselPrice(city, state);
             if (livePrice && typeof livePrice.price === "number") {
               autoFuel = livePrice.price;
@@ -435,47 +481,45 @@
           }
         }
         if (autoFuel == null) {
-          try{
-            const originFuel = await fuelPriceByCoords(geos[0]);
-            const destFuel   = await fuelPriceByCoords(geos[geos.length-1]);
-            if(originFuel?.price && destFuel?.price){
-              autoFuel = ((originFuel.price+destFuel.price)/2);
-              if (fuelMeta) fuelMeta.textContent=`auto: ${autoFuel.toFixed(2)} (${originFuel.source||'baseline'})`;
-            }
-          }catch{}
-          if(!autoFuel){
-            const fb = fallbackFuelFromInputs();
-            if(fb.price){ autoFuel = fb.price; if (fuelMeta) fuelMeta.textContent=`auto: ${autoFuel.toFixed(2)} (baseline)`; }
-            else if (fuelMeta) { fuelMeta.textContent='manual'; }
-          }
+          const fb = fallbackFuelFromInputs();
+          if(fb.price){ autoFuel = fb.price; if (fuelMeta) fuelMeta.textContent=`auto: ${autoFuel.toFixed(2)} (baseline)`; }
+          else if (fuelMeta) { fuelMeta.textContent='manual'; }
           if(Number.isFinite(autoFuel)) document.getElementById('fuel').value = autoFuel.toFixed(2);
         }
         const fuel = Number.isFinite(autoFuel) ? autoFuel : fuelInput;
+
+        // Route all legs
         let totalMeters=0,totalSeconds=0; const legLabels=[];
         for(let i=0;i<geos.length-1;i++){ const leg=await route(geos[i],geos[i+1]); totalMeters+=leg.meters; totalSeconds+=leg.seconds; legLabels.push(`${names[i]} → ${names[i+1]}`); }
         lastTotals={meters:totalMeters, seconds:totalSeconds};
+
         const miles=totalMeters/1609.344;
         const gallons = mpg>0 ? miles/mpg : 0;
         const fuelCost = gallons * fuel;
         const net = rate - fuelCost;
         const rpmGross = miles>0 ? (rate/miles) : 0;
         const rpmNet   = miles>0 ? (net/miles)   : 0;
+
         results.innerHTML = `
-          <div><span class="pill">One-way miles</span> <strong>${miles.toFixed(1)} mi</strong> • <span class="pill">ETA</span> ${fmtHrs(totalSeconds)}</div>
+          <div><span class="pill">One-way miles</span> <strong>${miles.toFixed(1)} mi</strong> • <span class="pill">ETA</span> ${Math.floor(totalSeconds/3600)}h ${Math.round((totalSeconds%3600)/60)}m</div>
           <div style="margin-top:6px"><span class="pill">Fuel used</span> ${gallons.toFixed(1)} gal • <span class="pill">Fuel cost</span> $ ${fuelCost.toFixed(2)}</div>
           <div style="margin-top:6px"><span class="pill">Gross pay</span> $ ${rate.toFixed(2)} • <span class="pill">Net after fuel</span> $ ${net.toFixed(2)}</div>
           <div style="margin-top:6px"><span class="pill">$/mi (gross)</span> ${rpmGross.toFixed(2)} • <span class="pill">$/mi (net)</span> ${rpmNet.toFixed(2)} ${rpmBadge(rpmNet)}</div>
         `;
+
+        // Tank range & refuel alert
         if(tank>0 && mpg>0){
           const range = tank * mpg; const stopsNeeded = Math.max(0, Math.ceil((miles - range)/range));
           rangeEl.innerHTML = `<div><span class="pill">Tank range</span> ~${Math.round(range)} mi (${tank} gal @ ${mpg} mpg)</div>
           <div style="margin-top:6px"><span class="pill">Refuel alert</span> ${stopsNeeded>0? '<span style="color:var(--danger)">Plan '+stopsNeeded+' stop(s)</span>':'No refuel needed'}</div>`;
         }
+
+        // Save to Compare
         saveBtn.onclick=()=>{ saveEntry({
           title:`${names[0]} → ${names[names.length-1]}`,
           legs:legLabels.join(' · '),
           miles:miles.toFixed(1),
-          eta:fmtHrs(totalSeconds),
+          eta:`${Math.floor(totalSeconds/3600)}h ${Math.round((totalSeconds%3600)/60)}m`,
           gallons:gallons.toFixed(1),
           fuelCost:fuelCost.toFixed(2),
           rate:rate.toFixed(2),
@@ -483,13 +527,15 @@
           rpmGross:rpmGross.toFixed(2),
           rpmNet:rpmNet.toFixed(2)
         }); status.textContent='Saved to Compare.'; };
+
         status.textContent='Done.';
-        updateMapLinks();
         saveFields();
       }catch(e){ console.error(e); status.textContent=e.message; }
     });
+
     loadFields();
     loadSaves();
+
   </script>
 </body>
 </html>
